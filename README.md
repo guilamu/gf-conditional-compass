@@ -5,7 +5,10 @@
 Display field IDs and conditional logic dependencies in the Gravity Forms editor with live updates and clickable badges.
 
 ## Features
-![Plugin Screenshot](https://github.com/guilamu/Gravity-Forms-Conditional-Compass/blob/main/screenshot.png)![Plugin Screenshot](https://github.com/guilamu/Gravity-Forms-Conditional-Compass/blob/main/screenshot-2.png)
+<div style="display: flex; gap: 10px;">
+  <img src="https://github.com/guilamu/Gravity-Forms-Conditional-Compass/blob/main/screenshot.png" alt="Screenshot 1" width="49%" />
+  <img src="https://github.com/guilamu/Gravity-Forms-Conditional-Compass/blob/main/screenshot-2.png" alt="Screenshot 2" width="49%" />
+</div>
 - **Field ID Badges**: Display field IDs inline with field labels in the form editor
 - **Conditional Logic Badges**: Show which fields are referenced in conditional logic rules
 - **Conditional Logic Map**: Comprehensive overview of all conditional logic relationships in your form
