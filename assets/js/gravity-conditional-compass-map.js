@@ -1,327 +1,418 @@
 /**
- * Conditional Logic Map JavaScript
- * 
- * @package Gravity_Conditional_Compass
- * @since 0.9.4
+ * Gravity Forms Conditional Compass - JavaScript v1.1
+ * Handles conditional logic badge updates and interactions with toggle functionality
  */
 
-(function($) {
-	'use strict';
+jQuery(document).ready(function($) {
+    // Translations and plugin URL are passed inline from PHP
 
-	// Store original content
-	var originalContent = '';
+    var specialFieldLabels = {
+        '_gpcld_current_time': gfFieldIdCondTranslations.currentTime,
+        '_gpcld_current_date': gfFieldIdCondTranslations.currentDate,
+        '_gpcld_yesterday': gfFieldIdCondTranslations.yesterday,
+        '_gpcld_tomorrow': gfFieldIdCondTranslations.tomorrow,
+        '_gpcld_last_week': gfFieldIdCondTranslations.lastWeek,
+        '_gpcld_next_week': gfFieldIdCondTranslations.nextWeek,
+        '_gpcld_last_month': gfFieldIdCondTranslations.lastMonth,
+        '_gpcld_next_month': gfFieldIdCondTranslations.nextMonth,
+        '_gpcld_last_year': gfFieldIdCondTranslations.lastYear,
+        '_gpcld_next_year': gfFieldIdCondTranslations.nextYear
+    };
 
-	/**
-	 * Initialize when document is ready
-	 */
-	$(document).ready(function() {
-		initCopyButton();
-		initTextareaInteractions();
-		initFilterToggles();
-	});
+    function getFieldDisplayLabel(fieldId) {
+        if (typeof fieldId === 'string' && specialFieldLabels[fieldId]) {
+            return specialFieldLabels[fieldId];
+        }
 
-	/**
-	 * Initialize copy to clipboard functionality
-	 */
-	function initCopyButton() {
-		var copyButton = $('#gfcl-copy-map');
-		var textarea = $('#gfcl-map-textarea');
-		var notice = $('#gfcl-copy-notice');
-		var noticeText = notice.find('.gfcl-copy-notice-text');
+        if (typeof form === 'undefined') return gfFieldIdCondTranslations.field + ' ' + fieldId;
 
-		if (!copyButton.length || !textarea.length) {
-			return;
-		}
+        var field = GetFieldById(fieldId);
+        if (field) {
+            return field.adminLabel || field.label || gfFieldIdCondTranslations.field + ' ' + fieldId;
+        }
+        return gfFieldIdCondTranslations.field + ' ' + fieldId;
+    }
 
-		copyButton.on('click', function(e) {
-			e.preventDefault();
+    function openConditionalLogicSettings(fieldId) {
+        var field = GetFieldById(fieldId);
+        if (!field) return;
 
-			// Select the textarea content
-			textarea.select();
-			textarea[0].setSelectionRange(0, textarea.val().length);
+        var $field = $('#field_' + fieldId);
+        if ($field.length) {
+            $field.trigger('click');
 
-			// Try to copy using the Clipboard API (modern browsers)
-			if (navigator.clipboard && navigator.clipboard.writeText) {
-				navigator.clipboard.writeText(textarea.val())
-					.then(function() {
-						showNotice('success', gfCondLogicMapL10n.copiedToClipboard);
-					})
-					.catch(function() {
-						// Fallback to execCommand
-						fallbackCopy();
-					});
-			} else {
-				// Fallback to execCommand for older browsers
-				fallbackCopy();
-			}
+            setTimeout(function() {
+                var $condLogicButton = $('.conditional_logic_accordion__toggle_button');
 
-			/**
-			 * Fallback copy method using execCommand
-			 */
-			function fallbackCopy() {
-				try {
-					var successful = document.execCommand('copy');
-					if (successful) {
-						showNotice('success', gfCondLogicMapL10n.copiedToClipboard);
-					} else {
-						showNotice('error', gfCondLogicMapL10n.copyFailed);
-					}
-				} catch (err) {
-					showNotice('error', gfCondLogicMapL10n.copyFailed);
-				}
-			}
+                if ($condLogicButton.length) {
+                    var $accordion = $condLogicButton.closest('.conditional_logic_accordion');
+                    var isOpen = $accordion && $accordion.hasClass('conditional_logic_accordion--open');
 
-			/**
-			 * Show copy notice
-			 * 
-			 * @param {string} type - Notice type (success/error)
-			 * @param {string} message - Notice message
-			 */
-			function showNotice(type, message) {
-				// Update notice content
-				noticeText.text(message);
-				
-				// Remove previous type classes
-				notice.removeClass('success error');
-				
-				// Add current type class
-				notice.addClass(type);
-				
-				// Update dashicon
-				var icon = notice.find('.dashicons');
-				icon.removeClass('dashicons-yes-alt dashicons-warning');
-				if (type === 'success') {
-					icon.addClass('dashicons-yes-alt');
-				} else {
-					icon.addClass('dashicons-warning');
-				}
-				
-				// Show notice
-				notice.fadeIn(300);
-				
-				// Hide notice after 3 seconds
-				setTimeout(function() {
-					notice.fadeOut(300);
-				}, 3000);
-			}
-		});
-	}
+                    if (!isOpen) {
+                        $condLogicButton[0].click();
+                    }
 
-	/**
-	 * Initialize textarea interactions
-	 */
-	function initTextareaInteractions() {
-		var textarea = $('#gfcl-map-textarea');
+                    setTimeout(function() {
+                        $condLogicButton[0].scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'nearest'
+                        });
+                    }, 100);
+                }
+            }, 300);
+        }
+    }
 
-		if (!textarea.length) {
-			return;
-		}
+    // CONDITION TO badges (IS USED BY)
+    function updateConditionToBadges() {
+        if (typeof form === 'undefined') return;
 
-		// Store original content
-		originalContent = textarea.val();
-		
-		// Clean markers from initial display
-		cleanAndDisplayContent(originalContent);
+        $('.gw-cond-to-separator, .gw-cond-to-field-id').remove();
 
-		// Select all text when clicking on the textarea
-		textarea.on('click', function() {
-			this.select();
-			this.setSelectionRange(0, this.value.length);
-		});
+        var fieldUsageMap = {};
 
-		// Prevent deselection when clicking inside
-		textarea.on('mouseup', function(e) {
-			e.preventDefault();
-		});
-	}
+        form.fields.forEach(function(field) {
+            if (field.conditionalLogic && field.conditionalLogic.rules && field.conditionalLogic.rules.length > 0) {
+                field.conditionalLogic.rules.forEach(function(rule) {
+                    var condFieldId = rule.fieldId;
 
-	/**
-	 * Clean markers from content and display
-	 * 
-	 * @param {string} content - Content to clean
-	 */
-	function cleanAndDisplayContent(content) {
-		var textarea = $('#gfcl-map-textarea');
-		
-		// Remove all marker tags
-		var cleaned = content
-			.replace(/\[HAS-DEPENDS-ON\]/g, '')
-			.replace(/\[HAS-USED-BY\]/g, '')
-			.replace(/\[DEPENDS-ON-START\]\n/g, '')
-			.replace(/\[DEPENDS-ON-END\]\n/g, '')
-			.replace(/\[USED-BY-START\]\n/g, '')
-			.replace(/\[USED-BY-END\]\n/g, '')
-			.replace(/\[FIELD-ID-START\]/g, '')
-			.replace(/\[FIELD-ID-END\]/g, '')
-			.replace(/\[FIELD-TYPE-START\]/g, '')
-			.replace(/\[FIELD-TYPE-END\]/g, '');
-		
-		textarea.val(cleaned);
-	}
+                    if (typeof condFieldId === 'string' && condFieldId.startsWith('_gpcld')) {
+                        return;
+                    }
 
-	/**
-	 * Initialize filter toggles
-	 */
-	function initFilterToggles() {
-		var hideDependsOn = $('#gfcl-hide-depends-on');
-		var hideUsedBy = $('#gfcl-hide-used-by');
-		var onlyWithDeps = $('#gfcl-only-with-deps');
-		var hideFieldNumber = $('#gfcl-hide-field-number');
-		var hideFieldType = $('#gfcl-hide-field-type');
-		var textarea = $('#gfcl-map-textarea');
+                    if (!fieldUsageMap[condFieldId]) {
+                        fieldUsageMap[condFieldId] = [];
+                    }
+                    if (fieldUsageMap[condFieldId].indexOf(field.id) === -1) {
+                        fieldUsageMap[condFieldId].push(field.id);
+                    }
+                });
+            }
+        });
 
-		if (!hideDependsOn.length || !hideUsedBy.length || !onlyWithDeps.length || 
-		    !hideFieldNumber.length || !hideFieldType.length || !textarea.length) {
-			return;
-		}
+        Object.keys(fieldUsageMap).forEach(function(usedFieldId) {
+            var $container = $('.gw-field-badges[data-field-id="' + usedFieldId + '"]');
+            if (!$container.length) return;
 
-		// Add change event listeners to all toggles
-		hideDependsOn.on('change', applyFilters);
-		hideUsedBy.on('change', applyFilters);
-		onlyWithDeps.on('change', applyFilters);
-		hideFieldNumber.on('change', applyFilters);
-		hideFieldType.on('change', applyFilters);
+            var usingFieldIds = fieldUsageMap[usedFieldId];
 
-		/**
-		 * Apply filters to the textarea content
-		 */
-		function applyFilters() {
-			var content = originalContent;
-			var hideDependsOnChecked = hideDependsOn.is(':checked');
-			var hideUsedByChecked = hideUsedBy.is(':checked');
-			var onlyWithDepsChecked = onlyWithDeps.is(':checked');
-			var hideFieldNumberChecked = hideFieldNumber.is(':checked');
-			var hideFieldTypeChecked = hideFieldType.is(':checked');
+            var isCollapsed = $container.data('cond-to-collapsed') === true;
 
-			// Split content into fields
-			var lines = content.split('\n');
-			var filteredLines = [];
-			var inField = false;
-			var currentField = [];
-			var skipField = false;
-			var hasDepends = false;
-			var hasUsedBy = false;
-			var inDependsOn = false;
-			var inUsedBy = false;
+            var separator = $('<span></span>')
+                .addClass('gw-cond-to-separator')
+                .attr('title', 'Used in conditional logic')
+                .attr('data-field-id', usedFieldId)
+                .html('<img src="' + gfFieldIdCondPluginUrl + 'randomize.png" style="width:15px;height:15px;display:block;transform:scaleX(-1);" alt="←" />');
 
-			// Add header
-			filteredLines.push(lines[0]); // "Form Conditional Logic Map"
-			filteredLines.push(lines[1]); // separator line
-			filteredLines.push(lines[2]); // empty line
+            if (isCollapsed) {
+                separator.addClass('collapsed');
+            }
 
-			for (var i = 3; i < lines.length; i++) {
-				var line = lines[i];
+            $container.append(separator);
 
-				// Check if it's a field header line
-				if (line.match(/\[FIELD-ID-START\]Field \d+/)) {
-					// Process previous field if exists
-					if (currentField.length > 0) {
-						processField();
-					}
+            usingFieldIds.forEach(function(usingFieldId) {
+                var usingField = GetFieldById(usingFieldId);
+                var fieldLabel = usingField ? (usingField.adminLabel || usingField.label || 'Field ' + usingFieldId) : 'Field ' + usingFieldId;
 
-					// Start new field
-					inField = true;
-					currentField = [line];
-					skipField = false;
-					hasDepends = line.includes('[HAS-DEPENDS-ON]');
-					hasUsedBy = line.includes('[HAS-USED-BY]');
-					inDependsOn = false;
-					inUsedBy = false;
+                var tooltip = 'Used as condition in: ' + fieldLabel;
+                var badgeText = 'COND: ' + usingFieldId;
 
-					// Check if we should skip this field based on "only with deps" filter
-					if (onlyWithDepsChecked && !hasDepends && !hasUsedBy) {
-						skipField = true;
-					}
-				} else if (inField) {
-					// Check for section markers
-					if (line.includes('[DEPENDS-ON-START]')) {
-						inDependsOn = true;
-						// Don't add marker line
-					} else if (line.includes('[DEPENDS-ON-END]')) {
-						inDependsOn = false;
-						// Don't add marker line
-					} else if (line.includes('[USED-BY-START]')) {
-						inUsedBy = true;
-						// Don't add marker line
-					} else if (line.includes('[USED-BY-END]')) {
-						inUsedBy = false;
-						// Don't add marker line
-					} else if (inDependsOn) {
-						// In DEPENDS ON section
-						if (!hideDependsOnChecked && !skipField) {
-							currentField.push(line);
-						}
-					} else if (inUsedBy) {
-						// In USED BY section
-						if (!hideUsedByChecked && !skipField) {
-							currentField.push(line);
-						}
-					} else {
-						// Regular line or empty line
-						currentField.push(line);
-					}
-				} else {
-					// Not in a field (shouldn't happen but handle it)
-					filteredLines.push(line);
-				}
-			}
+                var badge = $('<span></span>')
+                    .addClass('gw-cond-to-field-id')
+                    .attr('data-tooltip', tooltip)
+                    .attr('data-target-field-id', usingFieldId)
+                    .text(badgeText);
 
-			// Process last field
-			if (currentField.length > 0) {
-				processField();
-			}
+                if (isCollapsed) {
+                    badge.hide();
+                }
 
-			/**
-			 * Process and add current field to filtered lines
-			 */
-			function processField() {
-				if (!skipField && currentField.length > 0) {
-					// Process field header
-					var header = currentField[0];
-					
-					// Remove markers
-					header = header
-						.replace(' [HAS-DEPENDS-ON]', '')
-						.replace(' [HAS-USED-BY]', '');
-					
-					// Hide field number if toggle is checked
-					if (hideFieldNumberChecked) {
-						header = header.replace(/\[FIELD-ID-START\]Field \d+\[FIELD-ID-END\]\s*/g, '');
-					} else {
-						header = header.replace(/\[FIELD-ID-START\]/g, '').replace(/\[FIELD-ID-END\]/g, '');
-					}
-					
-					// Hide field type if toggle is checked
-					if (hideFieldTypeChecked) {
-						header = header.replace(/\[FIELD-TYPE-START\]\[.*?\]\[FIELD-TYPE-END\]\s*/g, '');
-					} else {
-						header = header.replace(/\[FIELD-TYPE-START\]/g, '').replace(/\[FIELD-TYPE-END\]/g, '');
-					}
-					
-					currentField[0] = header;
-					
-					// Process remaining lines in the field
-					for (var j = 1; j < currentField.length; j++) {
-						var line = currentField[j];
-						
-						// Hide field numbers in dependency lines if toggle is checked
-						if (hideFieldNumberChecked) {
-							line = line.replace(/\[FIELD-ID-START\]Field \d+\[FIELD-ID-END\]/g, '');
-						} else {
-							line = line.replace(/\[FIELD-ID-START\]/g, '').replace(/\[FIELD-ID-END\]/g, '');
-						}
-						
-						currentField[j] = line;
-					}
-					
-					filteredLines = filteredLines.concat(currentField);
-				}
-				currentField = [];
-			}
+                $container.append(badge);
+            });
+        });
 
-			// Update textarea with filtered content
-			textarea.val(filteredLines.join('\n'));
-		}
-	}
+        $('.gw-cond-to-separator').off('click').on('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
 
-})(jQuery);
+            var $separator = $(this);
+            var $container = $separator.closest('.gw-field-badges');
+            var $badges = $container.find('.gw-cond-to-field-id');
+
+            $badges.toggle();
+            $separator.toggleClass('collapsed');
+
+            var isCollapsed = $separator.hasClass('collapsed');
+            $container.data('cond-to-collapsed', isCollapsed);
+        });
+
+        $('.gw-cond-to-field-id').off('click').on('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var targetFieldId = parseInt($(this).attr('data-target-field-id'));
+            openConditionalLogicSettings(targetFieldId);
+        });
+    }
+
+    // CONDITION FROM badges (DEPENDS ON)
+    function updateConditionalBadges(specificFieldId) {
+        if (typeof form === 'undefined') return;
+
+        var selector = specificFieldId
+            ? '.gw-field-badges[data-field-id="' + specificFieldId + '"]'
+            : '.gw-field-badges';
+
+        $(selector).each(function() {
+            var $container = $(this);
+            var fieldId = parseInt($container.data('field-id'));
+            var field = GetFieldById(fieldId);
+
+            if (!field) return;
+
+            var isCondFromCollapsed = $container.data('cond-from-collapsed') === true;
+
+            $container.find('.gw-cond-field-id, .gw-cond-separator, .gw-inline-field-id:not(:first)').remove();
+
+            if (field.conditionalLogic && field.conditionalLogic.rules && field.conditionalLogic.rules.length > 0) {
+                var rules = field.conditionalLogic.rules;
+                var logicType = field.conditionalLogic.logicType || 'all';
+                var actionType = field.conditionalLogic.actionType || 'show';
+
+                var currentFieldLabel = field.adminLabel || field.label || gfFieldIdCondTranslations.thisField;
+
+                var actionText = actionType === 'hide'
+                    ? gfFieldIdCondTranslations.willBeHiddenIf
+                    : gfFieldIdCondTranslations.willBeDisplayedIf;
+
+                var separator = $('<span></span>')
+                    .addClass('gw-cond-separator')
+                    .attr('title', gfFieldIdCondTranslations.hasConditionalLogic)
+                    .attr('data-field-id', fieldId)
+                    .html('<img src="' + gfFieldIdCondPluginUrl + 'randomize.png" style="width:15px;height:15px;display:block;" alt="→" />');
+
+                if (isCondFromCollapsed) {
+                    separator.addClass('collapsed');
+                }
+
+                $container.append(separator);
+
+                var operatorMap = {
+                    'is': gfFieldIdCondTranslations.operators.is,
+                    'isnot': gfFieldIdCondTranslations.operators.isnot,
+                    '>': gfFieldIdCondTranslations.operators.greaterThan,
+                    '<': gfFieldIdCondTranslations.operators.lessThan,
+                    '>=': gfFieldIdCondTranslations.operators.greaterThanOrEqual,
+                    '<=': gfFieldIdCondTranslations.operators.lessThanOrEqual,
+                    'contains': gfFieldIdCondTranslations.operators.contains,
+                    'starts_with': gfFieldIdCondTranslations.operators.startsWith,
+                    'ends_with': gfFieldIdCondTranslations.operators.endsWith,
+                    'greater_than': gfFieldIdCondTranslations.operators.greaterThan,
+                    'less_than': gfFieldIdCondTranslations.operators.lessThan,
+                    'is_in': gfFieldIdCondTranslations.operators.isIn,
+                    'is_not_in': gfFieldIdCondTranslations.operators.isNotIn
+                };
+
+                var badgeClass = 'gw-cond-field-id';
+                if (logicType.toLowerCase() === 'any') {
+                    badgeClass += ' gw-cond-field-id-any';
+                }
+
+                rules.forEach(function(rule) {
+                    var condFieldId = rule.fieldId;
+                    var operator = rule.operator || 'is';
+                    var value = rule.value;
+
+                    var fieldLabel = getFieldDisplayLabel(condFieldId);
+                    var operatorDisplay = operatorMap[operator] || operator;
+
+                    var tooltip = currentFieldLabel + ' ' + actionText + ' ' + fieldLabel + ' ' + operatorDisplay;
+
+                    if (typeof value === 'undefined' || value === null || value === '') {
+                        if (operator === 'is') {
+                            tooltip = currentFieldLabel + ' ' + actionText + ' ' + fieldLabel + ' ' + gfFieldIdCondTranslations.isEmpty;
+                        } else if (operator === 'isnot') {
+                            tooltip = currentFieldLabel + ' ' + actionText + ' ' + fieldLabel + ' ' + gfFieldIdCondTranslations.isNotEmpty;
+                        }
+                    } else {
+                        var escapedValue = $('<div/>').text(value).html();
+                        tooltip += ' ' + escapedValue;
+                    }
+
+                    var badgeText = 'COND: ' + condFieldId;
+
+                    var badge = $('<span></span>')
+                        .addClass(badgeClass)
+                        .attr('data-tooltip', tooltip)
+                        .attr('data-field-id', fieldId)
+                        .text(badgeText);
+
+                    if (isCondFromCollapsed) {
+                        badge.hide();
+                    }
+
+                    $container.append(badge);
+                });
+
+                if (rules.length > 1) {
+                    var logicTypeDisplay = logicType.toUpperCase();
+                    var logicTypeTooltip = logicType === 'all'
+                        ? gfFieldIdCondTranslations.allConditionsMustBeMet
+                        : gfFieldIdCondTranslations.anyConditionCanBeMet;
+                    var logicTypeClass = 'gw-inline-field-id gw-logic-type-' + logicType.toLowerCase();
+                    var logicBadge = $('<span></span>')
+                        .addClass(logicTypeClass)
+                        .attr('data-tooltip', logicTypeTooltip)
+                        .text(logicTypeDisplay);
+
+                    if (isCondFromCollapsed) {
+                        logicBadge.hide();
+                    }
+
+                    $container.append(logicBadge);
+                }
+            }
+        });
+
+        updateConditionToBadges();
+
+        $('.gw-cond-separator').off('click').on('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            var $separator = $(this);
+            var $container = $separator.closest('.gw-field-badges');
+            var $badges = $container.find('.gw-cond-field-id, .gw-logic-type-all, .gw-logic-type-any');
+
+            $badges.toggle();
+            $separator.toggleClass('collapsed');
+
+            var isCollapsed = $separator.hasClass('collapsed');
+            $container.data('cond-from-collapsed', isCollapsed);
+        });
+
+        $('.gw-cond-field-id').off('click').on('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var fieldId = parseInt($(this).attr('data-field-id'));
+            openConditionalLogicSettings(fieldId);
+        });
+    }
+
+    // Global toggles in "No field selected" panel
+    function initGlobalFieldIdToggle() {
+        var $nothing = $('#nothing_selected');
+        if (!$nothing.length || $nothing.data('gw-field-id-toggle-init')) {
+            return;
+        }
+
+        $nothing.data('gw-field-id-toggle-init', true);
+
+        var labelField   = gfFieldIdCondTranslations.hideFieldIdBadges || 'Hide field ID badges';
+        var labelUsed    = gfFieldIdCondTranslations.hideUsedDependencies || 'Hide "is used" dependencies';
+        var labelDepends = gfFieldIdCondTranslations.hideDependsOnDependencies || 'Hide "depends on" dependencies';
+
+        var idField   = 'gw-hide-field-id-badges-toggle';
+        var idUsed    = 'gw-hide-used-deps-toggle';
+        var idDepends = 'gw-hide-depends-deps-toggle';
+
+        var $wrapper = $('<div class="gw-global-field-id-toggle"></div>');
+
+        var html =
+            '<div class="gw-toggle-row">' +
+                '<label class="gw-toggle">' +
+                    '<input type="checkbox" id="' + idField + '" class="gw-toggle-input" />' +
+                    '<span class="gw-toggle-slider"></span>' +
+                    '<span class="gw-toggle-label">' + labelField + '</span>' +
+                '</label>' +
+            '</div>' +
+            '<div class="gw-toggle-row">' +
+                '<label class="gw-toggle">' +
+                    '<input type="checkbox" id="' + idUsed + '" class="gw-toggle-input" />' +
+                    '<span class="gw-toggle-slider"></span>' +
+                    '<span class="gw-toggle-label">' + labelUsed + '</span>' +
+                '</label>' +
+            '</div>' +
+            '<div class="gw-toggle-row">' +
+                '<label class="gw-toggle">' +
+                    '<input type="checkbox" id="' + idDepends + '" class="gw-toggle-input" />' +
+                    '<span class="gw-toggle-slider"></span>' +
+                    '<span class="gw-toggle-label">' + labelDepends + '</span>' +
+                '</label>' +
+            '</div>';
+
+        $wrapper.html(html);
+        $nothing.append($wrapper);
+
+        $(document).on('change', '#' + idField, function() {
+            var checked = $(this).is(':checked');
+            $('body').toggleClass('gw-hide-field-id-badges', checked);
+        });
+
+        $(document).on('change', '#' + idUsed, function() {
+            var checked = $(this).is(':checked');
+            $('body').toggleClass('gw-hide-cond-used', checked);
+        });
+
+        $(document).on('change', '#' + idDepends, function() {
+            var checked = $(this).is(':checked');
+            $('body').toggleClass('gw-hide-cond-depends', checked);
+        });
+    }
+
+    setTimeout(updateConditionalBadges, 500);
+    setTimeout(initGlobalFieldIdToggle, 500);
+
+    $(document).on('gform_load_field_settings', function(event, field, form) {
+        setTimeout(function() {
+            updateConditionalBadges();
+        }, 100);
+    });
+
+    if (typeof gform !== 'undefined' && gform.addAction) {
+        gform.addAction('gform_post_set_field_property', function(property, field, value, prevValue) {
+            if (property === 'conditionalLogic' || property === 'enableConditionalLogic') {
+                updateConditionalBadges(field.id);
+            }
+
+            if (property === 'label' || property === 'adminLabel') {
+                updateConditionalBadges();
+            }
+        });
+    }
+
+    $(document).on('gform_field_conditional_logic_updated', updateConditionalBadges);
+
+    $(document).on('click', '.gform-settings-panel__header-icon--close', function() {
+        setTimeout(updateConditionalBadges, 300);
+    });
+
+    if (typeof gform !== 'undefined' && gform.addAction) {
+        gform.addAction('gform_post_conditional_logic_field_action', function() {
+            setTimeout(updateConditionalBadges, 100);
+        });
+    }
+
+    var observer = new MutationObserver(function(mutations) {
+        var shouldUpdate = false;
+        mutations.forEach(function(mutation) {
+            if (mutation.target.classList &&
+                (mutation.target.classList.contains('gform-settings-panel__content') ||
+                 mutation.target.classList.contains('gfield_conditional_logic_rules_container'))) {
+                shouldUpdate = true;
+            }
+        });
+        if (shouldUpdate) {
+            setTimeout(updateConditionalBadges, 200);
+            setTimeout(initGlobalFieldIdToggle, 200);
+        }
+    });
+
+    var formEditorTarget = document.querySelector('#gform_fields, .gform-form-editor');
+    if (formEditorTarget) {
+        observer.observe(formEditorTarget, {
+            childList: true,
+            subtree: true,
+            attributes: false
+        });
+    }
+});
