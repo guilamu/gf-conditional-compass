@@ -2,7 +2,7 @@
 <p align="center">
   <img src="assets/images/logo.png" alt="Gravity Conditional Compass Logo" width="400">
 </p>
-Display field IDs and conditional logic dependencies in the Gravity Forms editor with live updates and clickable badges.
+Display field IDs and conditional logic dependencies in the Gravity Forms editor with live updates and clickable badges. Add a Conditional Logic Map in the form settings (text-based overview that lists every conditional rule in your form so you can quickly see which fields depend on which others and how they interact).
 
 ## Features
 ![Plugin Screenshot](https://github.com/guilamu/Gravity-Forms-Conditional-Compass/blob/main/screenshot.png)![Plugin Screenshot](https://github.com/guilamu/Gravity-Forms-Conditional-Compass/blob/main/screenshot-2.png)
@@ -94,13 +94,14 @@ The plugin is translation-ready and includes:
 
 ## Changelog
 
-### Version 0.9.7 - 2025-11-28
+### Version 0.9.8 - 2025-11-28
 
 #### Major Update: Plugin Renamed
 - **New Name**: Gravity Conditional Compass (formerly "Gravity Forms Field ID and Conditional Logic Display")
 - Updated all file names and references
 - Updated text domain to `gravity-conditional-compass`
 - Updated folder structure and naming conventions
+- Added three global toggles in the “Field Settings → No field selected” panel to hide field ID badges, “is used” dependencies, and “depends on” dependencies in the form editor.
 
 #### Improvements
 - Refined file organization
