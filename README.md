@@ -2,7 +2,7 @@
 <p align="center">
   <img src="assets/images/logo.png" alt="Gravity Conditional Compass Logo" width="400">
 </p>
-Display field IDs and conditional logic dependencies in the Gravity Forms editor with live updates and clickable badges. Add a Conditional Logic Map in the form settings (text-based overview that lists every conditional rule in your form so you can quickly see which fields depend on which others and how they interact).
+Ever felt hopelessly lost in your own Gravity Forms conditional logic, like you built a maze and then misplaced the map? This plugin is your sarcastic little compass: it turns that wall of IFs and ANDs into a readable Conditional Logic Map and sprinkles clickable conditional badges directly in the form builder so you can see exactly which fields are pulling the strings!
 
 ## Features
 ![Plugin Screenshot](https://github.com/guilamu/Gravity-Forms-Conditional-Compass/blob/main/screenshot.png)![Plugin Screenshot](https://github.com/guilamu/Gravity-Forms-Conditional-Compass/blob/main/screenshot-2.png)
