@@ -50,17 +50,23 @@ class GF_Conditional_Logic_Map {
 	 * @param int   $form_id    Form ID
 	 * @return array
 	 */
-	public function add_settings_menu( $menu_items, $form_id ) {
-		$icon_svg = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 1v6m0 6v6"></path><path d="m5.64 18.36 4.24-4.24m4.24-4.24 4.24-4.24"></path><path d="m18.36 18.36-4.24-4.24m-4.24-4.24L5.64 5.64"></path></svg>';
+		public function add_settings_menu( $menu_items, $form_id ) {
 
-		$menu_items[] = array(
-			'name'  => 'gf_conditional_logic_map',
-			'label' => __( 'Conditional Logic Map', 'gravity-conditional-compass' ),
-			'icon'  => $icon_svg,
-		);
+    		$icon_svg  = '';
+    		$svg_path  = GFFIELDIDCOND_PLUGIN_DIR . 'assets/images/logo.bw.svg';
+		
+    		if ( file_exists( $svg_path ) ) {
+        		$icon_svg = file_get_contents( $svg_path );
+    		}
+		
+    		$menu_items[] = array(
+        		'name'  => 'gf_conditional_logic_map',
+        		'label' => __( 'Conditional Compass', 'gravity-conditional-compass' ),
+        		'icon'  => $icon_svg, // must be SVG or icon classes, not <img>
+    		);
+    return $menu_items;
+}
 
-		return $menu_items;
-	}
 
 	/**
 	 * Enqueue CSS and JS assets
@@ -278,7 +284,7 @@ class GF_Conditional_Logic_Map {
 		?>
 		<div class="gform-settings-panel">
 			<header class="gform-settings-panel__header">
-				<h4 class="gform-settings-panel__title"><?php esc_html_e( 'Conditional Logic Map', 'gravity-conditional-compass' ); ?></h4>
+				<h4 class="gform-settings-panel__title"><?php esc_html_e( 'Conditional Compass', 'gravity-conditional-compass' ); ?></h4>
 			</header>
 
 			<div class="gform-settings-panel__content">
