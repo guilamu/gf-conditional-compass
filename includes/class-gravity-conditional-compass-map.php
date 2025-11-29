@@ -13,14 +13,36 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Class GF_Conditional_Logic_Map
+ *
+ * Singleton class for managing the Conditional Logic Map settings page.
+ */
 class GF_Conditional_Logic_Map {
 
 	/**
 	 * Instance of this class
 	 *
-	 * @var GF_Conditional_Logic_Map
+	 * @var GF_Conditional_Logic_Map|null
 	 */
 	private static $instance = null;
+
+	/**
+	 * Operator translation map
+	 *
+	 * @var array
+	 */
+	private static $operator_map = array(
+		'is'          => 'is',
+		'isnot'       => 'is not',
+		'>'           => 'is greater than',
+		'<'           => 'is less than',
+		'>='          => 'is greater than or equal to',
+		'<='          => 'is less than or equal to',
+		'contains'    => 'contains',
+		'starts_with' => 'starts with',
+		'ends_with'   => 'ends with',
+	);
 
 	/**
 	 * Get instance of this class
@@ -37,10 +59,25 @@ class GF_Conditional_Logic_Map {
 	/**
 	 * Constructor
 	 */
-	public function __construct() {
+	private function __construct() {
 		add_filter( 'gform_form_settings_menu', array( $this, 'add_settings_menu' ), 10, 2 );
 		add_action( 'gform_form_settings_page_gf_conditional_logic_map', array( $this, 'settings_page' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
+	}
+
+	/**
+	 * Get the compass icon SVG markup
+	 *
+	 * @return string SVG icon markup
+	 */
+	private function get_compass_icon() {
+		return '<svg width="20" height="20" viewBox="0 0 570 570" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+			<g transform="translate(0,570) scale(0.1,-0.1)">
+				<path d="M2595 5689 c-241 -23 -506 -83 -730 -165 -263 -97 -583 -278 -800 -454 -44 -35 -136 -118 -204 -184 -890 -870 -1114 -2197 -558 -3309 367 -736 1048 -1285 1842 -1487 670 -171 1359 -97 1975 211 287 144 505 302 741 538 236 236 394 454 538 741 401 803 401 1737 0 2540 -174 347 -425 665 -724 917 -227 191 -559 384 -840 487 -386 142 -838 202 -1240 165z m513 -399 c196 -21 418 -73 592 -137 807 -301 1399 -1001 1559 -1843 56 -292 56 -628 0 -920 -131 -690 -555 -1292 -1161 -1651 -301 -179 -641 -292 -990 -329 -125 -13 -391 -13 -516 0 -926 99 -1718 715 -2045 1590 -149 401 -188 873 -106 1311 179 966 960 1757 1923 1945 214 41 533 56 744 34z"/>
+				<path d="M3910 4449 c-30 -4 -73 -14 -95 -22 -89 -33 -1544 -671 -1595 -700 -71 -41 -197 -161 -237 -229 -32 -52 -679 -1526 -713 -1624 -60 -170 -13 -361 119 -487 118 -113 287 -162 437 -127 63 14 1615 694 1681 736 88 56 183 160 230 251 23 43 189 420 371 838 349 801 361 835 347 944 -21 151 -91 266 -210 343 -97 63 -226 93 -335 77z m125 -414 c16 -15 25 -36 25 -54 0 -35 -647 -1527 -688 -1586 -15 -22 -45 -52 -67 -67 -55 -38 -1553 -690 -1588 -691 -39 -1 -77 38 -77 79 0 22 115 297 324 776 178 409 333 762 344 784 33 65 87 105 227 167 740 327 1415 616 1443 616 22 1 41 -7 57 -24z"/>
+				<path d="M2757 3230 c-111 -28 -209 -110 -260 -218 -29 -61 -32 -76 -32 -162 0 -86 3 -101 32 -162 40 -84 107 -151 193 -192 58 -28 75 -31 160 -31 85 0 102 3 160 31 83 39 155 111 194 194 28 58 31 75 31 160 0 85 -3 102 -31 160 -64 136 -186 219 -332 226 -42 2 -94 -1 -115 -6z"/>
+			</g>
+		</svg>';
 	}
 
 	/**
@@ -48,43 +85,39 @@ class GF_Conditional_Logic_Map {
 	 *
 	 * @param array $menu_items Menu items
 	 * @param int   $form_id    Form ID
-	 * @return array
+	 * @return array Modified menu items
 	 */
-		public function add_settings_menu( $menu_items, $form_id ) {
+	public function add_settings_menu( $menu_items, $form_id ) {
+		$menu_items[] = array(
+			'name'  => 'gf_conditional_logic_map',
+			'label' => __( 'Conditional Compass', 'gravity-conditional-compass' ),
+			'icon'  => $this->get_compass_icon(),
+		);
 
-    		$icon_svg  = '';
-    		$svg_path  = GFFIELDIDCOND_PLUGIN_DIR . 'assets/images/logo.bw.svg';
-		
-    		if ( file_exists( $svg_path ) ) {
-        		$icon_svg = file_get_contents( $svg_path );
-    		}
-		
-    		$menu_items[] = array(
-        		'name'  => 'gf_conditional_logic_map',
-        		'label' => __( 'Conditional Compass', 'gravity-conditional-compass' ),
-        		'icon'  => $icon_svg, // must be SVG or icon classes, not <img>
-    		);
-    return $menu_items;
-}
-
+		return $menu_items;
+	}
 
 	/**
 	 * Enqueue CSS and JS assets
 	 *
+	 * Only loads assets on the Conditional Logic Map settings page.
+	 *
 	 * @param string $hook Current admin page hook
+	 * @return void
 	 */
 	public function enqueue_assets( $hook ) {
-		// Only load on Gravity Forms settings pages
+		// Early return if not on Gravity Forms settings pages
 		if ( strpos( $hook, 'gf_edit_forms' ) === false ) {
 			return;
 		}
 
-		// Check if we're on the conditional logic map page
+		// Early return if not on the conditional logic map page
 		$subview = rgget( 'subview' );
 		if ( $subview !== 'gf_conditional_logic_map' ) {
 			return;
 		}
 
+		// Enqueue styles
 		wp_enqueue_style(
 			'gravity-conditional-compass-map',
 			GFFIELDIDCOND_PLUGIN_URL . 'assets/css/gravity-conditional-compass-map.css',
@@ -92,15 +125,77 @@ class GF_Conditional_Logic_Map {
 			GFFIELDIDCOND_VERSION
 		);
 
+		// Enqueue main JavaScript file (needed for form builder badge toggles)
 		wp_enqueue_script(
-			'gravity-conditional-compass-map',
-			GFFIELDIDCOND_PLUGIN_URL . 'assets/js/gravity-conditional-compass-map.js',
+			'gravity-conditional-compass',
+			GFFIELDIDCOND_PLUGIN_URL . 'assets/js/gravity-conditional-compass.js',
 			array( 'jquery' ),
 			GFFIELDIDCOND_VERSION,
 			true
 		);
 
-		// Pass translations to JS
+		// Pass translations to main JS file (required for badge functionality)
+		wp_localize_script(
+			'gravity-conditional-compass',
+			'gfFieldIdCondTranslations',
+			array(
+				'currentTime'               => __( 'Current Time', 'gravity-conditional-compass' ),
+				'currentDate'               => __( 'Current Date', 'gravity-conditional-compass' ),
+				'yesterday'                 => __( 'Yesterday', 'gravity-conditional-compass' ),
+				'tomorrow'                  => __( 'Tomorrow', 'gravity-conditional-compass' ),
+				'lastWeek'                  => __( 'Last Week', 'gravity-conditional-compass' ),
+				'nextWeek'                  => __( 'Next Week', 'gravity-conditional-compass' ),
+				'lastMonth'                 => __( 'Last Month', 'gravity-conditional-compass' ),
+				'nextMonth'                 => __( 'Next Month', 'gravity-conditional-compass' ),
+				'lastYear'                  => __( 'Last Year', 'gravity-conditional-compass' ),
+				'nextYear'                  => __( 'Next Year', 'gravity-conditional-compass' ),
+				'field'                     => __( 'field', 'gravity-conditional-compass' ),
+				'thisField'                 => __( 'This field', 'gravity-conditional-compass' ),
+				'willBeDisplayedIf'         => __( 'will be displayed if', 'gravity-conditional-compass' ),
+				'willBeHiddenIf'            => __( 'will be hidden if', 'gravity-conditional-compass' ),
+				'isEmpty'                   => __( 'is empty', 'gravity-conditional-compass' ),
+				'isNotEmpty'                => __( 'is not empty', 'gravity-conditional-compass' ),
+				'hasConditionalLogic'       => __( 'Has conditional logic', 'gravity-conditional-compass' ),
+				'usedInConditionalLogic'    => __( 'Used in conditional logic', 'gravity-conditional-compass' ),
+				'usedAsConditionIn'         => __( 'Used as condition in', 'gravity-conditional-compass' ),
+				'allConditionsMustBeMet'    => __( 'All conditions must be met', 'gravity-conditional-compass' ),
+				'anyConditionCanBeMet'      => __( 'Any condition can be met', 'gravity-conditional-compass' ),
+				'hideFieldIdBadges'         => __( 'Hide field ID badges', 'gravity-conditional-compass' ),
+				'hideUsedDependencies'      => __( 'Hide "is used" dependencies', 'gravity-conditional-compass' ),
+				'hideDependsOnDependencies' => __( 'Hide "depends on" dependencies', 'gravity-conditional-compass' ),
+				'operators'                 => array(
+					'is'                   => __( 'is', 'gravity-conditional-compass' ),
+					'isnot'                => __( 'is not', 'gravity-conditional-compass' ),
+					'greaterThan'          => __( 'is greater than', 'gravity-conditional-compass' ),
+					'lessThan'             => __( 'is less than', 'gravity-conditional-compass' ),
+					'greaterThanOrEqual'   => __( 'is greater than or equal to', 'gravity-conditional-compass' ),
+					'lessThanOrEqual'      => __( 'is less than or equal to', 'gravity-conditional-compass' ),
+					'contains'             => __( 'contains', 'gravity-conditional-compass' ),
+					'startsWith'           => __( 'starts with', 'gravity-conditional-compass' ),
+					'endsWith'             => __( 'ends with', 'gravity-conditional-compass' ),
+					'isIn'                 => __( 'is in', 'gravity-conditional-compass' ),
+					'isNotIn'              => __( 'is not in', 'gravity-conditional-compass' ),
+				),
+			)
+		);
+
+		// Pass plugin URL to main JS
+		wp_add_inline_script(
+			'gravity-conditional-compass',
+			'var gfFieldIdCondPluginUrl = ' . json_encode( GFFIELDIDCOND_PLUGIN_URL ) . ';',
+			'before'
+		);
+
+		// Enqueue map-specific JavaScript
+		wp_enqueue_script(
+			'gravity-conditional-compass-map',
+			GFFIELDIDCOND_PLUGIN_URL . 'assets/js/gravity-conditional-compass-map.js',
+			array( 'jquery', 'gravity-conditional-compass' ),
+			GFFIELDIDCOND_VERSION,
+			true
+		);
+
+		// Localize map script with translations
 		wp_localize_script(
 			'gravity-conditional-compass-map',
 			'gfCondLogicMapL10n',
@@ -113,13 +208,27 @@ class GF_Conditional_Logic_Map {
 
 	/**
 	 * Render the settings page
+	 *
+	 * @return void
 	 */
 	public function settings_page() {
-		$form_id = rgget( 'id' );
-		$form    = GFAPI::get_form( $form_id );
+		$form_id = absint( rgget( 'id' ) );
 
-		if ( ! $form ) {
-			echo '<p>' . esc_html__( 'Form not found.', 'gravity-conditional-compass' ) . '</p>';
+		if ( ! $form_id ) {
+			$this->render_error_message( __( 'Invalid form ID.', 'gravity-conditional-compass' ) );
+			return;
+		}
+
+		$form = GFAPI::get_form( $form_id );
+
+		if ( is_wp_error( $form ) || ! $form ) {
+			$this->render_error_message( __( 'Form not found.', 'gravity-conditional-compass' ) );
+			return;
+		}
+
+		// Validate form structure
+		if ( ! is_array( $form ) || ! isset( $form['fields'] ) ) {
+			$this->render_error_message( __( 'Invalid form structure.', 'gravity-conditional-compass' ) );
 			return;
 		}
 
@@ -129,169 +238,387 @@ class GF_Conditional_Logic_Map {
 	}
 
 	/**
-	 * Generate the conditional logic text map
+	 * Render error message
+	 *
+	 * @param string $message Error message to display
+	 * @return void
+	 */
+	private function render_error_message( $message ) {
+		echo '<div class="notice notice-error"><p>' . esc_html( $message ) . '</p></div>';
+	}
+
+	/**
+	 * Get form title and description for display
 	 *
 	 * @param array $form Form object
-	 * @return string
+	 * @return array Array with 'name' and 'description' keys
+	 */
+	private function get_form_info( $form ) {
+		return array(
+			'name'        => ! empty( $form['title'] ) ? $form['title'] : __( 'Untitled Form', 'gravity-conditional-compass' ),
+			'description' => ! empty( $form['description'] ) ? $form['description'] : '',
+		);
+	}
+
+	/**
+	 * Get formatted map title
+	 *
+	 * @param array $form Form object
+	 * @return string Formatted title
+	 */
+	private function get_map_title( $form ) {
+		$form_info = $this->get_form_info( $form );
+
+		if ( ! empty( $form_info['description'] ) ) {
+			return sprintf(
+				__( 'Conditional Logic Map for form %s (%s)', 'gravity-conditional-compass' ),
+				$form_info['name'],
+				$form_info['description']
+			);
+		}
+
+		return sprintf(
+			__( 'Conditional Logic Map for form %s', 'gravity-conditional-compass' ),
+			$form_info['name']
+		);
+	}
+
+	/**
+	 * Generate the conditional logic text map
+	 *
+	 * Uses array-based string building for better performance with large forms.
+	 *
+	 * @param array $form Form object
+	 * @return string Generated map text
 	 */
 	private function generate_map( $form ) {
-		$map = "Form Conditional Logic Map\n";
-		$map .= str_repeat( '═', 79 ) . "\n\n";
+		$form_info = $this->get_form_info( $form );
+		$map_lines = array();
 
-		if ( empty( $form['fields'] ) ) {
-			$map .= __( 'No fields found.', 'gravity-conditional-compass' ) . "\n";
-			return $map;
+		// Build title
+		if ( ! empty( $form_info['description'] ) ) {
+			$title = sprintf(
+				__( 'Conditional Logic Map for form %s (%s)', 'gravity-conditional-compass' ),
+				$form_info['name'],
+				$form_info['description']
+			);
+		} else {
+			$title = sprintf(
+				__( 'Conditional Logic Map for form %s', 'gravity-conditional-compass' ),
+				$form_info['name']
+			);
 		}
 
-		// Build a usage map (which fields are used by which fields)
-		$usage_map = array();
-		foreach ( $form['fields'] as $field ) {
-			if ( ! empty( $field->conditionalLogic ) && ! empty( $field->conditionalLogic['rules'] ) ) {
-				foreach ( $field->conditionalLogic['rules'] as $rule ) {
-					$condition_field_id = $rule['fieldId'];
-					if ( ! isset( $usage_map[ $condition_field_id ] ) ) {
-						$usage_map[ $condition_field_id ] = array();
-					}
-					$usage_map[ $condition_field_id ][] = array(
-						'field_id' => $field->id,
-						'operator' => $rule['operator'],
-						'value'    => isset( $rule['value'] ) ? $rule['value'] : '',
-					);
-				}
-			}
+		$map_lines[] = $title;
+		$map_lines[] = str_repeat( '═', 79 );
+		$map_lines[] = ''; // Empty line
+
+		// Early return if no fields
+		if ( empty( $form['fields'] ) || ! is_array( $form['fields'] ) ) {
+			$map_lines[] = __( 'No fields found.', 'gravity-conditional-compass' );
+			return implode( "\n", $map_lines );
 		}
 
-		// Operator mapping
-		$operator_map = array(
-			'is'          => __( 'is', 'gravity-conditional-compass' ),
-			'isnot'       => __( 'is not', 'gravity-conditional-compass' ),
-			'>'           => __( 'is greater than', 'gravity-conditional-compass' ),
-			'<'           => __( 'is less than', 'gravity-conditional-compass' ),
-			'>='          => __( 'is greater than or equal to', 'gravity-conditional-compass' ),
-			'<='          => __( 'is less than or equal to', 'gravity-conditional-compass' ),
-			'contains'    => __( 'contains', 'gravity-conditional-compass' ),
-			'starts_with' => __( 'starts with', 'gravity-conditional-compass' ),
-			'ends_with'   => __( 'ends with', 'gravity-conditional-compass' ),
-		);
+		// Build usage map (which fields are used by which fields)
+		$usage_map = $this->build_usage_map( $form['fields'] );
+
+		// Get translated operator map
+		$operator_map = $this->get_operator_map();
 
 		// Generate map for each field
 		foreach ( $form['fields'] as $field ) {
-			$field_label = ! empty( $field->adminLabel ) ? $field->adminLabel : $field->label;
-			$field_type  = ucfirst( $field->type );
-
-			// Determine if field has dependencies
-			$has_depends_on = ! empty( $field->conditionalLogic ) && ! empty( $field->conditionalLogic['rules'] );
-			$has_used_by    = isset( $usage_map[ $field->id ] );
-
-			// Mark unused fields (neither use conditions nor are used by others)
-			$unused_start = ( ! $has_depends_on && ! $has_used_by ) ? '[UNUSED-START]' : '';
-			$unused_end   = ( ! $has_depends_on && ! $has_used_by ) ? '[UNUSED-END]' : '';
-
-			$map .= sprintf(
-				"%s[FIELD-ID-START]Field %d[FIELD-ID-END] [FIELD-TYPE-START][%s][FIELD-TYPE-END] \"%s\"\n",
-				$unused_start,
-				$field->id,
-				$field_type,
-				$field_label
-			);
-
-			// DEPENDS ON (conditions FROM other fields)
-			if ( $has_depends_on ) {
-				$logic_type = isset( $field->conditionalLogic['logicType'] ) ? $field->conditionalLogic['logicType'] : 'all';
-
-				foreach ( $field->conditionalLogic['rules'] as $index => $rule ) {
-					$condition_field_id = $rule['fieldId'];
-					$condition_field    = GFFormsModel::get_field( $form, $condition_field_id );
-					$condition_label    = $condition_field ? ( ! empty( $condition_field->adminLabel ) ? $condition_field->adminLabel : $condition_field->label ) : "Field {$condition_field_id}";
-
-					$operator = isset( $operator_map[ $rule['operator'] ] ) ? $operator_map[ $rule['operator'] ] : $rule['operator'];
-					$value    = isset( $rule['value'] ) ? $rule['value'] : '';
-
-					$action = ( $field->conditionalLogic['actionType'] === 'show' ) ? 'SHOW IF' : 'HIDE IF';
-
-					// Build the sentence
-					if ( $rule['operator'] === 'is' && empty( $value ) ) {
-						$condition_text = sprintf(
-							'[FIELD-ID-START]Field %d[FIELD-ID-END] "%s" is empty',
-							$condition_field_id,
-							$condition_label
-						);
-					} elseif ( $rule['operator'] === 'isnot' && empty( $value ) ) {
-						$condition_text = sprintf(
-							'[FIELD-ID-START]Field %d[FIELD-ID-END] "%s" is not empty',
-							$condition_field_id,
-							$condition_label
-						);
-					} else {
-						$condition_text = sprintf(
-							'[FIELD-ID-START]Field %d[FIELD-ID-END] "%s" %s %s',
-							$condition_field_id,
-							$condition_label,
-							$operator,
-							$value
-						);
-					}
-
-					$map .= sprintf(
-						"  ╚═[%s]═> %s\n",
-						$action,
-						$condition_text
-					);
-
-					// Add logic type indicator if there are multiple rules
-					if ( count( $field->conditionalLogic['rules'] ) > 1 && $index < count( $field->conditionalLogic['rules'] ) - 1 ) {
-						$logic_indicator = strtoupper( $logic_type );
-						$map .= sprintf( "      [%s]\n", $logic_indicator );
-					}
-				}
+			if ( ! is_object( $field ) || ! isset( $field->id ) ) {
+				continue; // Skip invalid fields
 			}
 
-			// USED BY (conditions TO other fields that use this field)
-			if ( $has_used_by ) {
-				foreach ( $usage_map[ $field->id ] as $usage ) {
-					$operator = isset( $operator_map[ $usage['operator'] ] ) ? $operator_map[ $usage['operator'] ] : $usage['operator'];
-					$value    = $usage['value'];
+			$field_lines = $this->generate_field_map( $field, $form, $usage_map, $operator_map );
+			$map_lines   = array_merge( $map_lines, $field_lines );
+		}
 
-					if ( $usage['operator'] === 'is' && empty( $value ) ) {
-						$condition_desc = 'is empty';
-					} elseif ( $usage['operator'] === 'isnot' && empty( $value ) ) {
-						$condition_desc = 'is not empty';
-					} else {
-						$condition_desc = sprintf( '%s %s', $operator, $value );
-					}
+		return implode( "\n", $map_lines );
+	}
 
-					$map .= sprintf(
-						"  └─> IS USED BY [FIELD-ID-START]Field %d[FIELD-ID-END] (condition: %s)\n",
-						$usage['field_id'],
-						$condition_desc
-					);
-				}
+	/**
+	 * Build usage map showing which fields are used by which fields
+	 *
+	 * @param array $fields Array of field objects
+	 * @return array Usage map array
+	 */
+	private function build_usage_map( $fields ) {
+		$usage_map = array();
+
+		foreach ( $fields as $field ) {
+			if ( ! is_object( $field ) || empty( $field->conditionalLogic ) || empty( $field->conditionalLogic['rules'] ) ) {
+				continue;
 			}
 
-			$map .= $unused_end . "\n";
+			foreach ( $field->conditionalLogic['rules'] as $rule ) {
+				if ( ! isset( $rule['fieldId'] ) ) {
+					continue;
+				}
+
+				$condition_field_id = absint( $rule['fieldId'] );
+
+				if ( ! isset( $usage_map[ $condition_field_id ] ) ) {
+					$usage_map[ $condition_field_id ] = array();
+				}
+
+				$usage_map[ $condition_field_id ][] = array(
+					'field_id' => $field->id,
+					'operator' => isset( $rule['operator'] ) ? $rule['operator'] : '',
+					'value'    => isset( $rule['value'] ) ? $rule['value'] : '',
+				);
+			}
+		}
+
+		return $usage_map;
+	}
+
+	/**
+	 * Get translated operator map
+	 *
+	 * @return array Operator map with translated strings
+	 */
+	private function get_operator_map() {
+		$map = array();
+
+		foreach ( self::$operator_map as $key => $value ) {
+			$map[ $key ] = __( $value, 'gravity-conditional-compass' );
 		}
 
 		return $map;
 	}
 
 	/**
+	 * Generate map lines for a single field
+	 *
+	 * @param object $field        Field object
+	 * @param array  $form         Form object
+	 * @param array  $usage_map    Usage map
+	 * @param array  $operator_map Operator map
+	 * @return array Array of map lines for this field
+	 */
+	private function generate_field_map( $field, $form, $usage_map, $operator_map ) {
+		$lines = array();
+
+		// Get field properties with fallbacks
+		$field_label = ! empty( $field->adminLabel ) ? $field->adminLabel : ( ! empty( $field->label ) ? $field->label : '' );
+		$field_type  = ! empty( $field->type ) ? ucfirst( $field->type ) : 'Unknown';
+
+		// Determine if field has dependencies
+		$has_depends_on = ! empty( $field->conditionalLogic ) && ! empty( $field->conditionalLogic['rules'] );
+		$has_used_by    = isset( $usage_map[ $field->id ] );
+
+		// Mark unused fields
+		$is_unused = ! $has_depends_on && ! $has_used_by;
+		$unused_start = $is_unused ? '[UNUSED-START]' : '';
+		$unused_end   = $is_unused ? '[UNUSED-END]' : '';
+
+		// Field header line
+		$lines[] = sprintf(
+			'%s[FIELD-ID-START]Field %d[FIELD-ID-END] [FIELD-TYPE-START][%s][FIELD-TYPE-END] "%s"',
+			$unused_start,
+			$field->id,
+			$field_type,
+			$field_label
+		);
+
+		// DEPENDS ON (conditions FROM other fields)
+		if ( $has_depends_on ) {
+			$depends_lines = $this->generate_depends_on_lines( $field, $form, $operator_map );
+			$lines         = array_merge( $lines, $depends_lines );
+		}
+
+		// USED BY (conditions TO other fields that use this field)
+		if ( $has_used_by ) {
+			$used_by_lines = $this->generate_used_by_lines( $field, $usage_map, $operator_map );
+			$lines         = array_merge( $lines, $used_by_lines );
+		}
+
+		// Close unused marker
+		$lines[] = $unused_end;
+
+		return $lines;
+	}
+
+	/**
+	 * Generate "depends on" lines for a field
+	 *
+	 * @param object $field        Field object
+	 * @param array  $form         Form object
+	 * @param array  $operator_map Operator map
+	 * @return array Array of lines
+	 */
+	private function generate_depends_on_lines( $field, $form, $operator_map ) {
+		$lines      = array();
+		$logic_type = isset( $field->conditionalLogic['logicType'] ) ? $field->conditionalLogic['logicType'] : 'all';
+		$rules      = $field->conditionalLogic['rules'];
+		$rules_count = count( $rules );
+
+		foreach ( $rules as $index => $rule ) {
+			if ( ! isset( $rule['fieldId'] ) ) {
+				continue;
+			}
+
+			$condition_field_id = absint( $rule['fieldId'] );
+			$condition_field    = GFFormsModel::get_field( $form, $condition_field_id );
+
+			// Get condition field label with fallback
+			if ( $condition_field && is_object( $condition_field ) ) {
+				$condition_label = ! empty( $condition_field->adminLabel ) ? $condition_field->adminLabel : ( ! empty( $condition_field->label ) ? $condition_field->label : "Field {$condition_field_id}" );
+			} else {
+				$condition_label = "Field {$condition_field_id}";
+			}
+
+			$operator = isset( $rule['operator'] ) && isset( $operator_map[ $rule['operator'] ] ) ? $operator_map[ $rule['operator'] ] : ( isset( $rule['operator'] ) ? $rule['operator'] : '' );
+			$value    = isset( $rule['value'] ) ? $rule['value'] : '';
+
+			$action = ( isset( $field->conditionalLogic['actionType'] ) && $field->conditionalLogic['actionType'] === 'show' ) ? 'SHOW IF' : 'HIDE IF';
+
+			// Build condition text
+			$condition_text = $this->format_condition_text( $condition_field_id, $condition_label, $rule['operator'], $operator, $value );
+
+			$lines[] = sprintf( '  ╚═[%s]═> %s', $action, $condition_text );
+
+			// Add logic type indicator if there are multiple rules and not the last one
+			if ( $rules_count > 1 && $index < $rules_count - 1 ) {
+				$lines[] = sprintf( '      [%s]', strtoupper( $logic_type ) );
+			}
+		}
+
+		return $lines;
+	}
+
+	/**
+	 * Format condition text for display
+	 *
+	 * @param int    $field_id        Condition field ID
+	 * @param string $field_label      Condition field label
+	 * @param string $operator_key     Operator key (is, isnot, etc.)
+	 * @param string $operator_label   Translated operator label
+	 * @param string $value            Condition value
+	 * @return string Formatted condition text
+	 */
+	private function format_condition_text( $field_id, $field_label, $operator_key, $operator_label, $value ) {
+		// Handle special cases for empty/not empty
+		if ( $operator_key === 'is' && empty( $value ) ) {
+			return sprintf(
+				'[FIELD-ID-START]Field %d[FIELD-ID-END] "%s" is empty',
+				$field_id,
+				$field_label
+			);
+		}
+
+		if ( $operator_key === 'isnot' && empty( $value ) ) {
+			return sprintf(
+				'[FIELD-ID-START]Field %d[FIELD-ID-END] "%s" is not empty',
+				$field_id,
+				$field_label
+			);
+		}
+
+		// Standard condition format
+		return sprintf(
+			'[FIELD-ID-START]Field %d[FIELD-ID-END] "%s" %s %s',
+			$field_id,
+			$field_label,
+			$operator_label,
+			$value
+		);
+	}
+
+	/**
+	 * Generate "used by" lines for a field
+	 *
+	 * @param object $field        Field object
+	 * @param array  $usage_map    Usage map
+	 * @param array  $operator_map Operator map
+	 * @return array Array of lines
+	 */
+	private function generate_used_by_lines( $field, $usage_map, $operator_map ) {
+		$lines = array();
+
+		if ( ! isset( $usage_map[ $field->id ] ) || ! is_array( $usage_map[ $field->id ] ) ) {
+			return $lines;
+		}
+
+		foreach ( $usage_map[ $field->id ] as $usage ) {
+			if ( ! isset( $usage['field_id'] ) || ! isset( $usage['operator'] ) ) {
+				continue;
+			}
+
+			$operator = isset( $operator_map[ $usage['operator'] ] ) ? $operator_map[ $usage['operator'] ] : $usage['operator'];
+			$value    = isset( $usage['value'] ) ? $usage['value'] : '';
+
+			// Format condition description
+			if ( $usage['operator'] === 'is' && empty( $value ) ) {
+				$condition_desc = 'is empty';
+			} elseif ( $usage['operator'] === 'isnot' && empty( $value ) ) {
+				$condition_desc = 'is not empty';
+			} else {
+				$condition_desc = sprintf( '%s %s', $operator, $value );
+			}
+
+			$lines[] = sprintf(
+				'  └─> IS USED BY [FIELD-ID-START]Field %d[FIELD-ID-END] (condition: %s)',
+				$usage['field_id'],
+				$condition_desc
+			);
+		}
+
+		return $lines;
+	}
+
+	/**
 	 * Render the map UI
 	 *
 	 * @param array $form Form object
+	 * @return void
 	 */
 	private function render_map_ui( $form ) {
 		$map_content = $this->generate_map( $form );
+		$form_info   = $this->get_form_info( $form );
 		?>
+		<!-- Form Builder Section -->
 		<div class="gform-settings-panel">
 			<header class="gform-settings-panel__header">
-				<h4 class="gform-settings-panel__title"><?php esc_html_e( 'Conditional Compass', 'gravity-conditional-compass' ); ?></h4>
+				<h4 class="gform-settings-panel__title"><?php esc_html_e( 'Form builder settings', 'gravity-conditional-compass' ); ?></h4>
+			</header>
+
+			<div class="gform-settings-panel__content">
+				<div class="gfcl-filters">
+					<label class="gfcl-toggle">
+						<input type="checkbox" id="gw-hide-field-id-badges-toggle" class="gfcl-toggle-input">
+						<span class="gfcl-toggle-slider"></span>
+						<span class="gfcl-toggle-label"><?php esc_html_e( 'Hide Field ID badges', 'gravity-conditional-compass' ); ?></span>
+					</label>
+
+					<label class="gfcl-toggle">
+						<input type="checkbox" id="gw-hide-depends-deps-toggle" class="gfcl-toggle-input">
+						<span class="gfcl-toggle-slider"></span>
+						<span class="gfcl-toggle-label"><?php esc_html_e( 'Hide "Depends on" badges', 'gravity-conditional-compass' ); ?></span>
+					</label>
+
+					<label class="gfcl-toggle">
+						<input type="checkbox" id="gw-hide-used-deps-toggle" class="gfcl-toggle-input">
+						<span class="gfcl-toggle-slider"></span>
+						<span class="gfcl-toggle-label"><?php esc_html_e( 'Hide "Used by" badges', 'gravity-conditional-compass' ); ?></span>
+					</label>
+				</div>
+			</div>
+		</div>
+
+		<!-- Conditional Logic Map Section -->
+		<div class="gform-settings-panel">
+			<header class="gform-settings-panel__header">
+				<h4 class="gform-settings-panel__title"><?php esc_html_e( 'Conditional Logic Map', 'gravity-conditional-compass' ); ?></h4>
 			</header>
 
 			<div class="gform-settings-panel__content">
 				<div class="gfcl-map-container">
 					<div class="gfcl-map-header">
 						<label class="gform-settings-label">
-							<?php esc_html_e( 'Form Conditional Logic Overview', 'gravity-conditional-compass' ); ?>
+							<?php echo esc_html( $this->get_map_title( $form ) ); ?>
 						</label>
 						<button type="button" class="button button-secondary gfcl-copy-button" id="gfcl-copy-map">
 							<span class="dashicons dashicons-clipboard"></span>
@@ -329,6 +656,12 @@ class GF_Conditional_Logic_Map {
 							<input type="checkbox" id="gfcl-hide-depends-on" class="gfcl-toggle-input">
 							<span class="gfcl-toggle-slider"></span>
 							<span class="gfcl-toggle-label"><?php esc_html_e( 'Hide "depends on" dependencies', 'gravity-conditional-compass' ); ?></span>
+						</label>
+
+						<label class="gfcl-toggle">
+							<input type="checkbox" id="gfcl-full-english-toggle" class="gfcl-toggle-input">
+							<span class="gfcl-toggle-slider"></span>
+							<span class="gfcl-toggle-label"><?php esc_html_e( 'Full English', 'gravity-conditional-compass' ); ?></span>
 						</label>
 					</div>
 
