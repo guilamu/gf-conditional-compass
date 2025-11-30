@@ -147,14 +147,6 @@ gravity-conditional-compass/
 - **JavaScript**: Modular functions with clear separation of concerns
 - **CSS**: Organized with comments and logical grouping
 
-### Contributing
-When contributing code, please ensure:
-- All functions have proper documentation (JSDoc/PHPDoc)
-- Error handling is implemented
-- Accessibility features are maintained
-- Performance optimizations are considered
-- Code follows existing style and patterns
-
 ## Support
 
 For issues, questions, or feature requests, please visit the [GitHub repository](https://github.com/guilamu/Gravity-Conditional-Compass).
