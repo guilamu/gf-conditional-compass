@@ -152,32 +152,7 @@ gravity-conditional-compass/
 - Updated text domain to `gravity-conditional-compass`
 - Updated folder structure and naming conventions
 - Added three global toggles in the "Field Settings → No field selected" panel to hide field ID badges, "is used" dependencies, and "depends on" dependencies in the form editor.
-
-#### Code Quality & Performance Improvements
-- **Performance Optimizations**:
-  - Implemented debouncing for badge updates (150ms delay) to reduce excessive DOM updates
-  - Added DOM element caching to minimize jQuery queries
-  - Optimized MutationObserver to only trigger on relevant DOM changes
-  - Reduced redundant function calls and improved event handler efficiency
-  
-- **Code Quality**:
-  - Added comprehensive JSDoc documentation for all JavaScript functions
-  - Improved error handling with validation checks and try-catch blocks
-  - Enhanced code organization with better function structure and naming
-  - Added accessibility improvements (keyboard navigation, ARIA attributes, focus states)
-  - Improved PHP documentation with PHPDoc comments
-  
-- **Code Refactoring**:
-  - Wrapped JavaScript in IIFE with strict mode
-  - Consolidated event handlers using event delegation
-  - Removed redundant code and improved variable scoping
-  - Fixed version constant mismatch (0.9.7 → 0.9.8)
-  - Enhanced CSS with better organization and accessibility focus states
-
-#### Improvements
-- Refined file organization
-- Updated documentation
-- Improved code consistency
+- Code Quality & Performance Improvements
 
 ### Version 0.9.6 - 2025-11-27
 
