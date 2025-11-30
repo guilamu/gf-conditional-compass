@@ -11,8 +11,14 @@
  * @since 0.9.4
  */
 
-(function($) {
+(function ($) {
 	'use strict';
+
+	// Ensure translations are available
+	if (typeof gfCondLogicMapL10n === 'undefined') {
+		console.warn('Gravity Conditional Compass Map: Translations not loaded');
+		return;
+	}
 
 	/**
 	 * Main Conditional Logic Map object
@@ -64,7 +70,7 @@
 		 *
 		 * @return {void}
 		 */
-		init: function() {
+		init: function () {
 			this.cacheElements();
 			this.initCopyButton();
 			this.initTextareaInteractions();
@@ -78,8 +84,8 @@
 		 *
 		 * @return {void}
 		 */
-		cacheElements: function() {
-			this.			elements = {
+		cacheElements: function () {
+			this.elements = {
 				textarea: $('#gfcl-map-textarea'),
 				copyButton: $('#gfcl-copy-map'),
 				copyNotice: $('#gfcl-copy-notice'),
@@ -99,7 +105,7 @@
 		 *
 		 * @return {void}
 		 */
-		initCopyButton: function() {
+		initCopyButton: function () {
 			var self = this;
 			var copyButton = this.elements.copyButton;
 			var textarea = this.elements.textarea;
@@ -110,7 +116,7 @@
 				return;
 			}
 
-			copyButton.on('click', function(e) {
+			copyButton.on('click', function (e) {
 				e.preventDefault();
 				self.copyToClipboard(textarea, notice, noticeText);
 			});
@@ -124,7 +130,7 @@
 		 * @param {jQuery} noticeText  Notice text element
 		 * @return {void}
 		 */
-		copyToClipboard: function(textarea, notice, noticeText) {
+		copyToClipboard: function (textarea, notice, noticeText) {
 			var self = this;
 
 			// Select the textarea content
@@ -140,10 +146,10 @@
 			// Try to copy using the Clipboard API (modern browsers)
 			if (navigator.clipboard && navigator.clipboard.writeText) {
 				navigator.clipboard.writeText(textarea.val())
-					.then(function() {
+					.then(function () {
 						self.showNotice(notice, noticeText, 'success', gfCondLogicMapL10n.copiedToClipboard);
 					})
-					.catch(function() {
+					.catch(function () {
 						// Fallback to execCommand
 						self.fallbackCopy(textarea, notice, noticeText);
 					});
@@ -161,7 +167,7 @@
 		 * @param {jQuery} noticeText  Notice text element
 		 * @return {void}
 		 */
-		fallbackCopy: function(textarea, notice, noticeText) {
+		fallbackCopy: function (textarea, notice, noticeText) {
 			var self = this;
 			var successful = false;
 
@@ -187,7 +193,7 @@
 		 * @param {string} message    Notice message
 		 * @return {void}
 		 */
-		showNotice: function(notice, noticeText, type, message) {
+		showNotice: function (notice, noticeText, type, message) {
 			// Update notice content
 			noticeText.text(message);
 
@@ -210,7 +216,7 @@
 			notice.fadeIn(300);
 
 			// Hide notice after 3 seconds
-			setTimeout(function() {
+			setTimeout(function () {
 				notice.fadeOut(300);
 			}, 3000);
 		},
@@ -220,7 +226,7 @@
 		 *
 		 * @return {void}
 		 */
-		initTextareaInteractions: function() {
+		initTextareaInteractions: function () {
 			var textarea = this.elements.textarea;
 
 			if (!textarea.length) {
@@ -242,7 +248,7 @@
 		 * @param {string} content Content to clean
 		 * @return {void}
 		 */
-		cleanAndDisplayContent: function(content) {
+		cleanAndDisplayContent: function (content) {
 			var textarea = this.elements.textarea;
 			var patterns = this.patterns;
 
@@ -263,7 +269,7 @@
 		 *
 		 * @return {void}
 		 */
-		initFilterToggles: function() {
+		initFilterToggles: function () {
 			var self = this;
 			var elements = this.elements;
 
@@ -273,34 +279,34 @@
 			}
 
 			// Add change event listeners to toggles
-			elements.hideFieldNumber.on('change', function() {
+			elements.hideFieldNumber.on('change', function () {
 				self.applyFilters();
 			});
 
-			elements.hideFieldType.on('change', function() {
+			elements.hideFieldType.on('change', function () {
 				self.applyFilters();
 			});
 
 			if (elements.hideUnused.length) {
-				elements.hideUnused.on('change', function() {
+				elements.hideUnused.on('change', function () {
 					self.applyFilters();
 				});
 			}
 
 			if (elements.hideUsedBy.length) {
-				elements.hideUsedBy.on('change', function() {
+				elements.hideUsedBy.on('change', function () {
 					self.applyFilters();
 				});
 			}
 
 			if (elements.hideDependsOn.length) {
-				elements.hideDependsOn.on('change', function() {
+				elements.hideDependsOn.on('change', function () {
 					self.applyFilters();
 				});
 			}
 
 			if (elements.fullEnglish.length) {
-				elements.fullEnglish.on('change', function() {
+				elements.fullEnglish.on('change', function () {
 					self.applyFilters();
 				});
 			}
@@ -313,7 +319,7 @@
 		 * @param {string} content Original map content
 		 * @return {string} Full English formatted content
 		 */
-		convertToFullEnglish: function(content) {
+		convertToFullEnglish: function (content) {
 			var lines = content.split('\n');
 			var result = [];
 			var currentField = null;
@@ -425,7 +431,7 @@
 		 * @param {string} conditionText Raw condition text
 		 * @return {string} Formatted condition text
 		 */
-		formatConditionText: function(fieldLabel, fieldId, conditionText) {
+		formatConditionText: function (fieldLabel, fieldId, conditionText) {
 			var patterns = this.patterns;
 
 			// Clean up the condition text - remove any remaining field ID markers
@@ -435,7 +441,12 @@
 				.trim();
 
 			// Return formatted: "the [Label] field ([ID]) [condition]"
-			return 'the ' + fieldLabel + ' field (' + fieldId + ') ' + conditionText;
+			// Uses localized pattern: 'conditionPart' => 'the %1$s field (%2$s) %3$s'
+			var pattern = gfCondLogicMapL10n.conditionPart;
+			return pattern
+				.replace('%1$s', fieldLabel)
+				.replace('%2$s', fieldId)
+				.replace('%3$s', conditionText);
 		},
 
 		/**
@@ -447,15 +458,20 @@
 		 * @param {string} action     'SHOW IF' or 'HIDE IF'
 		 * @return {string} Formatted sentence
 		 */
-		formatFullEnglishSentence: function(field, conditions, logicType, action) {
-			var actionText = action === 'SHOW IF' ? 'will be shown if' : 'will be hidden if';
+		formatFullEnglishSentence: function (field, conditions, logicType, action) {
+			var actionText = action === 'SHOW IF' ? gfCondLogicMapL10n.willBeShown : gfCondLogicMapL10n.willBeHidden;
 
 			// Join conditions with AND or OR
-			var connector = logicType === 'all' ? ' AND ' : ' OR ';
+			var connector = logicType === 'all' ? gfCondLogicMapL10n.connectorAnd : gfCondLogicMapL10n.connectorOr;
 			var conditionsText = conditions.join(connector);
 
 			// Format: "The [Label] field ([ID]), will be shown if [conditions]."
-			return 'The ' + field.label + ' field (' + field.id + '), ' + actionText + ' ' + conditionsText + '.';
+			// Uses localized pattern: 'sentenceStart' => 'The %1$s field (%2$s),'
+			var start = gfCondLogicMapL10n.sentenceStart
+				.replace('%1$s', field.label)
+				.replace('%2$s', field.id);
+
+			return start + ' ' + actionText + ' ' + conditionsText + '.';
 		},
 
 		/**
@@ -463,18 +479,18 @@
 		 *
 		 * @return {void}
 		 */
-		applyFilters: function() {
+		applyFilters: function () {
 			var content = this.originalContent;
 			var elements = this.elements;
 			var patterns = this.patterns;
 
 			// Get toggle states
 			var hideFieldNumberChecked = elements.hideFieldNumber.is(':checked');
-			var hideFieldTypeChecked   = elements.hideFieldType.is(':checked');
-			var hideUnusedChecked      = elements.hideUnused.length ? elements.hideUnused.is(':checked') : false;
-			var hideUsedByChecked      = elements.hideUsedBy.length ? elements.hideUsedBy.is(':checked') : false;
-			var hideDependsOnChecked   = elements.hideDependsOn.length ? elements.hideDependsOn.is(':checked') : false;
-			var fullEnglishChecked     = elements.fullEnglish.length ? elements.fullEnglish.is(':checked') : false;
+			var hideFieldTypeChecked = elements.hideFieldType.is(':checked');
+			var hideUnusedChecked = elements.hideUnused.length ? elements.hideUnused.is(':checked') : false;
+			var hideUsedByChecked = elements.hideUsedBy.length ? elements.hideUsedBy.is(':checked') : false;
+			var hideDependsOnChecked = elements.hideDependsOn.length ? elements.hideDependsOn.is(':checked') : false;
+			var fullEnglishChecked = elements.fullEnglish.length ? elements.fullEnglish.is(':checked') : false;
 
 			// If Full English mode is enabled, convert to full English format
 			if (fullEnglishChecked) {
@@ -532,7 +548,7 @@
 	/**
 	 * Initialize when document is ready
 	 */
-	$(document).ready(function() {
+	$(document).ready(function () {
 		ConditionalLogicMap.init();
 	});
 

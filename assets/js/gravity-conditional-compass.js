@@ -66,6 +66,19 @@
 	var DEBOUNCE_DELAY = 150;
 
 	/**
+	 * Safely get field by ID
+	 *
+	 * @param {number} fieldId Field ID
+	 * @return {Object|null} Field object or null
+	 */
+	function safelyGetFieldById(fieldId) {
+		if (typeof GetFieldById === 'function') {
+			return GetFieldById(fieldId);
+		}
+		return null;
+	}
+
+	/**
 	 * Get display label for a field
 	 *
 	 * @param {number|string} fieldId Field ID or special field identifier
@@ -83,7 +96,7 @@
 		}
 
 		// Get field from form
-		var field = GetFieldById(fieldId);
+		var field = safelyGetFieldById(fieldId);
 		if (field && (field.adminLabel || field.label)) {
 			return field.adminLabel || field.label;
 		}
@@ -102,7 +115,7 @@
 			return;
 		}
 
-		var field = GetFieldById(fieldId);
+		var field = safelyGetFieldById(fieldId);
 		if (!field) {
 			return;
 		}
@@ -220,7 +233,7 @@
 
 			// Create badges for each field that uses this field
 			usingFieldIds.forEach(function(usingFieldId) {
-				var usingField = GetFieldById(usingFieldId);
+				var usingField = safelyGetFieldById(usingFieldId);
 				var fieldLabel = usingField
 					? (usingField.adminLabel || usingField.label || 'Field ' + usingFieldId)
 					: 'Field ' + usingFieldId;
@@ -306,7 +319,7 @@
 				return;
 			}
 
-			var field = GetFieldById(fieldId);
+			var field = safelyGetFieldById(fieldId);
 			if (!field) {
 				return;
 			}
