@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Gravity Forms Conditional Compass 1.0.0\n"
 "Report-Msgid-Bugs-To: https://gravitywiz.com/\n"
 "POT-Creation-Date: 2025-11-27 20:15+0000\n"
-"PO-Revision-Date: 2025-11-29 14:38+0100\n"
+"PO-Revision-Date: 2025-11-30 18:06+0100\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -71,6 +71,7 @@ msgid "will be displayed if"
 msgstr "sera affiché si"
 
 #: gravity-conditional-compass.php:95
+#: includes/class-gravity-conditional-compass-map.php:210
 msgid "will be hidden if"
 msgstr "sera masqué si"
 
@@ -227,9 +228,31 @@ msgid "Hide \"depends on\" dependencies"
 msgstr "Masquer les dépendances \"dépend de\""
 
 #: includes/class-gravity-conditional-compass-map.php:452
-msgid "Full English"
-msgstr "Anglais complet"
+msgid "Natural Language"
+msgstr "Langage naturel"
 
 #: includes/class-gravity-conditional-compass-map.php:462
 msgid "This is a text-based map showing all conditional logic relationships in your form. Use the button above to copy the entire map to your clipboard."
 msgstr "Il s'agit d'une carte textuelle montrant toutes les relations de logique conditionnelle dans votre formulaire. Utilisez le bouton ci-dessus pour copier toute la carte dans votre presse-papiers."
+
+#: includes/class-gravity-conditional-compass-map.php:208
+#, php-format
+msgid "The %1$s field (%2$s),"
+msgstr "Le champ %1$s (%2$s),"
+
+#: includes/class-gravity-conditional-compass-map.php:209
+msgid "will be shown if"
+msgstr "sera affiché si"
+
+#: includes/class-gravity-conditional-compass-map.php:211
+msgid " AND "
+msgstr " ET "
+
+#: includes/class-gravity-conditional-compass-map.php:212
+msgid " OR "
+msgstr " OU "
+
+#: includes/class-gravity-conditional-compass-map.php:213
+#, php-format
+msgid "the %1$s field (%2$s) %3$s"
+msgstr "le champ %1$s (%2$s) %3$s"
