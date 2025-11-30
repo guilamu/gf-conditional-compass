@@ -137,6 +137,13 @@ gravity-conditional-compass/
 
 ## Changelog
 
+### Version 1.0 - 2025-11-30
+
+#### New Features
+- **Natural Language Mode**: Replaced "Full English" with a smarter "Natural Language" mode that generates human-readable sentences describing conditional logic.
+- **Improved Translations**: Full French translation support for the new Natural Language mode.
+- **Refactored Codebase**: Major code quality improvements, security hardening, and performance optimizations.
+
 ### Version 0.9.8 - 2025-11-29
 
 #### Major Update: Plugin Renamed

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Gravity Forms Conditional Compass
  * Description: Display field IDs and conditional logic dependencies in the Gravity Forms editor with live updates and clickable badges
- * Version: 0.9.8
+ * Version: 1.0
  * Text Domain: gravity-conditional-compass
  * Domain Path: /languages
  * Requires at least: 5.0
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants
-define( 'GFFIELDIDCOND_VERSION', '0.9.8' );
+define( 'GFFIELDIDCOND_VERSION', '1.0' );
 define( 'GFFIELDIDCOND_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'GFFIELDIDCOND_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
@@ -71,63 +71,7 @@ function gf_field_id_cond_inline_css_fallback() {
 }
 add_action( 'admin_head', 'gf_field_id_cond_inline_css_fallback', 1 );
 
-/**
- * Output translations and plugin URL inline before loading external JavaScript
- *
- * This ensures translations are available immediately when the script loads.
- * Uses priority 5 to run before script enqueue (priority 10).
- *
- * @return void
- */
-add_action( 'gform_editor_js', function() {
-	?>
-	<script type="text/javascript">
-		// Translations object - loaded BEFORE external JS file
-		var gfFieldIdCondTranslations = {
-			currentTime: <?php echo json_encode( __( 'Current Time', 'gravity-conditional-compass' ) ); ?>,
-			currentDate: <?php echo json_encode( __( 'Current Date', 'gravity-conditional-compass' ) ); ?>,
-			yesterday: <?php echo json_encode( __( 'Yesterday', 'gravity-conditional-compass' ) ); ?>,
-			tomorrow: <?php echo json_encode( __( 'Tomorrow', 'gravity-conditional-compass' ) ); ?>,
-			lastWeek: <?php echo json_encode( __( 'Last Week', 'gravity-conditional-compass' ) ); ?>,
-			nextWeek: <?php echo json_encode( __( 'Next Week', 'gravity-conditional-compass' ) ); ?>,
-			lastMonth: <?php echo json_encode( __( 'Last Month', 'gravity-conditional-compass' ) ); ?>,
-			nextMonth: <?php echo json_encode( __( 'Next Month', 'gravity-conditional-compass' ) ); ?>,
-			lastYear: <?php echo json_encode( __( 'Last Year', 'gravity-conditional-compass' ) ); ?>,
-			nextYear: <?php echo json_encode( __( 'Next Year', 'gravity-conditional-compass' ) ); ?>,
-			field: <?php echo json_encode( __( 'field', 'gravity-conditional-compass' ) ); ?>,
-			thisField: <?php echo json_encode( __( 'This field', 'gravity-conditional-compass' ) ); ?>,
-			willBeDisplayedIf: <?php echo json_encode( __( 'will be displayed if', 'gravity-conditional-compass' ) ); ?>,
-			willBeHiddenIf: <?php echo json_encode( __( 'will be hidden if', 'gravity-conditional-compass' ) ); ?>,
-			isEmpty: <?php echo json_encode( __( 'is empty', 'gravity-conditional-compass' ) ); ?>,
-			isNotEmpty: <?php echo json_encode( __( 'is not empty', 'gravity-conditional-compass' ) ); ?>,
-			hasConditionalLogic: <?php echo json_encode( __( 'Has conditional logic', 'gravity-conditional-compass' ) ); ?>,
-			usedInConditionalLogic: <?php echo json_encode( __( 'Used in conditional logic', 'gravity-conditional-compass' ) ); ?>,
-			usedAsConditionIn: <?php echo json_encode( __( 'Used as condition in', 'gravity-conditional-compass' ) ); ?>,
-			allConditionsMustBeMet: <?php echo json_encode( __( 'All conditions must be met', 'gravity-conditional-compass' ) ); ?>,
-			anyConditionCanBeMet: <?php echo json_encode( __( 'Any condition can be met', 'gravity-conditional-compass' ) ); ?>,
-			hideFieldIdBadges: <?php echo json_encode( __( 'Hide field ID badges', 'gravity-conditional-compass' ) ); ?>,
-			hideUsedDependencies: <?php echo json_encode( __( 'Hide "is used" dependencies', 'gravity-conditional-compass' ) ); ?>,
-			hideDependsOnDependencies: <?php echo json_encode( __( 'Hide "depends on" dependencies', 'gravity-conditional-compass' ) ); ?>,
-			operators: {
-				is: <?php echo json_encode( __( 'is', 'gravity-conditional-compass' ) ); ?>,
-				isnot: <?php echo json_encode( __( 'is not', 'gravity-conditional-compass' ) ); ?>,
-				greaterThan: <?php echo json_encode( __( 'is greater than', 'gravity-conditional-compass' ) ); ?>,
-				lessThan: <?php echo json_encode( __( 'is less than', 'gravity-conditional-compass' ) ); ?>,
-				greaterThanOrEqual: <?php echo json_encode( __( 'is greater than or equal to', 'gravity-conditional-compass' ) ); ?>,
-				lessThanOrEqual: <?php echo json_encode( __( 'is less than or equal to', 'gravity-conditional-compass' ) ); ?>,
-				contains: <?php echo json_encode( __( 'contains', 'gravity-conditional-compass' ) ); ?>,
-				startsWith: <?php echo json_encode( __( 'starts with', 'gravity-conditional-compass' ) ); ?>,
-				endsWith: <?php echo json_encode( __( 'ends with', 'gravity-conditional-compass' ) ); ?>,
-				isIn: <?php echo json_encode( __( 'is in', 'gravity-conditional-compass' ) ); ?>,
-				isNotIn: <?php echo json_encode( __( 'is not in', 'gravity-conditional-compass' ) ); ?>
-			}
-		};
 
-		// Pass plugin URL to JavaScript for the randomize.png image
-		var gfFieldIdCondPluginUrl = <?php echo json_encode( GFFIELDIDCOND_PLUGIN_URL ); ?>;
-	</script>
-	<?php
-}, 5 ); // Priority 5 - runs BEFORE the script enqueue priority 10
 
 /**
  * Enqueue JavaScript file for form builder functionality
@@ -147,6 +91,58 @@ function gf_field_id_cond_enqueue_scripts() {
 			array( 'jquery' ),
 			GFFIELDIDCOND_VERSION,
 			true
+		);
+
+		// Localize script with translations
+		wp_localize_script(
+			'gravity-conditional-compass',
+			'gfFieldIdCondTranslations',
+			array(
+				'currentTime'               => __( 'Current Time', 'gravity-conditional-compass' ),
+				'currentDate'               => __( 'Current Date', 'gravity-conditional-compass' ),
+				'yesterday'                 => __( 'Yesterday', 'gravity-conditional-compass' ),
+				'tomorrow'                  => __( 'Tomorrow', 'gravity-conditional-compass' ),
+				'lastWeek'                  => __( 'Last Week', 'gravity-conditional-compass' ),
+				'nextWeek'                  => __( 'Next Week', 'gravity-conditional-compass' ),
+				'lastMonth'                 => __( 'Last Month', 'gravity-conditional-compass' ),
+				'nextMonth'                 => __( 'Next Month', 'gravity-conditional-compass' ),
+				'lastYear'                  => __( 'Last Year', 'gravity-conditional-compass' ),
+				'nextYear'                  => __( 'Next Year', 'gravity-conditional-compass' ),
+				'field'                     => __( 'field', 'gravity-conditional-compass' ),
+				'thisField'                 => __( 'This field', 'gravity-conditional-compass' ),
+				'willBeDisplayedIf'         => __( 'will be displayed if', 'gravity-conditional-compass' ),
+				'willBeHiddenIf'            => __( 'will be hidden if', 'gravity-conditional-compass' ),
+				'isEmpty'                   => __( 'is empty', 'gravity-conditional-compass' ),
+				'isNotEmpty'                => __( 'is not empty', 'gravity-conditional-compass' ),
+				'hasConditionalLogic'       => __( 'Has conditional logic', 'gravity-conditional-compass' ),
+				'usedInConditionalLogic'    => __( 'Used in conditional logic', 'gravity-conditional-compass' ),
+				'usedAsConditionIn'         => __( 'Used as condition in', 'gravity-conditional-compass' ),
+				'allConditionsMustBeMet'    => __( 'All conditions must be met', 'gravity-conditional-compass' ),
+				'anyConditionCanBeMet'      => __( 'Any condition can be met', 'gravity-conditional-compass' ),
+				'hideFieldIdBadges'         => __( 'Hide field ID badges', 'gravity-conditional-compass' ),
+				'hideUsedDependencies'      => __( 'Hide "is used" dependencies', 'gravity-conditional-compass' ),
+				'hideDependsOnDependencies' => __( 'Hide "depends on" dependencies', 'gravity-conditional-compass' ),
+				'operators'                 => array(
+					'is'                 => __( 'is', 'gravity-conditional-compass' ),
+					'isnot'              => __( 'is not', 'gravity-conditional-compass' ),
+					'greaterThan'        => __( 'is greater than', 'gravity-conditional-compass' ),
+					'lessThan'           => __( 'is less than', 'gravity-conditional-compass' ),
+					'greaterThanOrEqual' => __( 'is greater than or equal to', 'gravity-conditional-compass' ),
+					'lessThanOrEqual'    => __( 'is less than or equal to', 'gravity-conditional-compass' ),
+					'contains'           => __( 'contains', 'gravity-conditional-compass' ),
+					'startsWith'         => __( 'starts with', 'gravity-conditional-compass' ),
+					'endsWith'           => __( 'ends with', 'gravity-conditional-compass' ),
+					'isIn'               => __( 'is in', 'gravity-conditional-compass' ),
+					'isNotIn'            => __( 'is not in', 'gravity-conditional-compass' ),
+				),
+			)
+		);
+
+		// Pass plugin URL to JavaScript
+		wp_add_inline_script(
+			'gravity-conditional-compass',
+			'var gfFieldIdCondPluginUrl = ' . json_encode( GFFIELDIDCOND_PLUGIN_URL ) . ';',
+			'before'
 		);
 	}
 }
