@@ -90,7 +90,7 @@ class GF_Conditional_Logic_Map {
 	public function add_settings_menu( $menu_items, $form_id ) {
 		$menu_items[] = array(
 			'name'  => 'gf_conditional_logic_map',
-			'label' => __( 'Conditional Compass', 'gravity-conditional-compass' ),
+			'label' => 'Conditional Compass',
 			'icon'  => $this->get_compass_icon(),
 		);
 
@@ -112,7 +112,7 @@ class GF_Conditional_Logic_Map {
 		}
 
 		// Early return if not on the conditional logic map page
-		$subview = rgget( 'subview' );
+		$subview = sanitize_text_field( rgget( 'subview' ) );
 		if ( $subview !== 'gf_conditional_logic_map' ) {
 			return;
 		}
@@ -202,6 +202,13 @@ class GF_Conditional_Logic_Map {
 			array(
 				'copiedToClipboard' => __( 'Copied to clipboard!', 'gravity-conditional-compass' ),
 				'copyFailed'        => __( 'Failed to copy. Please select and copy manually.', 'gravity-conditional-compass' ),
+				'naturalLanguage'   => __( 'Natural Language', 'gravity-conditional-compass' ),
+				'sentenceStart'     => __( 'The %1$s field (%2$s),', 'gravity-conditional-compass' ),
+				'willBeShown'       => __( 'will be shown if', 'gravity-conditional-compass' ),
+				'willBeHidden'      => __( 'will be hidden if', 'gravity-conditional-compass' ),
+				'connectorAnd'      => __( ' AND ', 'gravity-conditional-compass' ),
+				'connectorOr'       => __( ' OR ', 'gravity-conditional-compass' ),
+				'conditionPart'     => __( 'the %1$s field (%2$s) %3$s', 'gravity-conditional-compass' ),
 			)
 		);
 	}
@@ -346,6 +353,10 @@ class GF_Conditional_Logic_Map {
 	 */
 	private function build_usage_map( $fields ) {
 		$usage_map = array();
+
+		if ( ! is_array( $fields ) ) {
+			return $usage_map;
+		}
 
 		foreach ( $fields as $field ) {
 			if ( ! is_object( $field ) || empty( $field->conditionalLogic ) || empty( $field->conditionalLogic['rules'] ) ) {
@@ -661,7 +672,7 @@ class GF_Conditional_Logic_Map {
 						<label class="gfcl-toggle">
 							<input type="checkbox" id="gfcl-full-english-toggle" class="gfcl-toggle-input">
 							<span class="gfcl-toggle-slider"></span>
-							<span class="gfcl-toggle-label"><?php esc_html_e( 'Full English', 'gravity-conditional-compass' ); ?></span>
+							<span class="gfcl-toggle-label"><?php esc_html_e( 'Natural Language', 'gravity-conditional-compass' ); ?></span>
 						</label>
 					</div>
 
