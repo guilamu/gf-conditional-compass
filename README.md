@@ -138,59 +138,7 @@ gravity-conditional-compass/
 ## Changelog
 
 ### Version 1.0 - 2025-11-30
-
-#### New Features
-- **Natural Language Mode**: Replaced "Full English" with a smarter "Natural Language" mode that generates human-readable sentences describing conditional logic.
-- **Improved Translations**: Full French translation support for the new Natural Language mode.
-- **Refactored Codebase**: Major code quality improvements, security hardening, and performance optimizations.
-
-### Version 0.9.8 - 2025-11-29
-
-#### Major Update: Plugin Renamed
-- **New Name**: Gravity Conditional Compass (formerly "Gravity Forms Field ID and Conditional Logic Display")
-- Updated all file names and references
-- Updated text domain to `gravity-conditional-compass`
-- Updated folder structure and naming conventions
-- Added three global toggles in the "Field Settings → No field selected" panel to hide field ID badges, "is used" dependencies, and "depends on" dependencies in the form editor.
-- Code Quality & Performance Improvements
-
-### Version 0.9.6 - 2025-11-27
-
-#### New Features
-- Added Conditional Logic Map feature
-- Comprehensive overview of all conditional logic relationships
-- Filterable view options
-- Copy to clipboard functionality
-
-### Version 0.9 - 2025-11-26
-
 #### Initial Release
-- Display field IDs inline with field labels
-- Show conditional logic dependencies as clickable badges
-- Live updates when modifying conditional logic
-- Tooltips with natural language descriptions
-- Multilingual support (English and French)
-- ALL/ANY logic type indicators
-- Click badges to open conditional logic settings
-
-## Technical Details
-
-### Performance Features
-- **Debounced Updates**: Badge updates are debounced (150ms) to prevent excessive DOM manipulation during rapid changes
-- **DOM Caching**: Frequently accessed elements are cached to reduce jQuery queries
-- **Event Delegation**: Efficient event handling using event delegation patterns
-- **Optimized Observers**: MutationObserver configured to only trigger on relevant DOM changes
-
-### Code Quality
-- **Documentation**: Comprehensive JSDoc and PHPDoc comments throughout
-- **Error Handling**: Robust error handling with validation checks and graceful fallbacks
-- **Accessibility**: Full keyboard navigation support, ARIA attributes, and focus states
-- **Standards Compliance**: Follows WordPress and JavaScript best practices
-
-### Browser Support
-- Modern browsers (Chrome, Firefox, Safari, Edge)
-- Requires JavaScript enabled
-- localStorage support for toggle state persistence
 
 ## Development
 
