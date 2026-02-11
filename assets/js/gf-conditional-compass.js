@@ -549,14 +549,16 @@
 		var ids = {
 			field: 'gfcc-hide-field-id-badges-toggle',
 			used: 'gfcc-hide-used-deps-toggle',
-			depends: 'gfcc-hide-depends-deps-toggle'
+			depends: 'gfcc-hide-depends-deps-toggle',
+			copy: 'gfcc-hide-copy-badge-toggle'
 		};
 
 		// localStorage keys
 		var keys = {
 			field: 'gfcc-hide-field-id-badges',
 			used: 'gfcc-hide-cond-used',
-			depends: 'gfcc-hide-cond-depends'
+			depends: 'gfcc-hide-cond-depends',
+			copy: 'gfcc-hide-copy-badge'
 		};
 
 		// Avoid binding handlers multiple times
@@ -574,16 +576,19 @@
 			var hideField = window.localStorage.getItem(keys.field) === '1';
 			var hideUsed = window.localStorage.getItem(keys.used) === '1';
 			var hideDepends = window.localStorage.getItem(keys.depends) === '1';
+			var hideCopy = window.localStorage.getItem(keys.copy) === '1';
 
 			// Apply body classes
 			$body.toggleClass('gfcc-hide-field-id-badges', hideField);
 			$body.toggleClass('gfcc-hide-cond-used', hideUsed);
 			$body.toggleClass('gfcc-hide-cond-depends', hideDepends);
+			$body.toggleClass('gfcc-hide-copy-badge', hideCopy);
 
 			// Sync checkboxes if they exist (on Conditional Compass settings page)
 			var $fieldToggle = $('#' + ids.field);
 			var $usedToggle = $('#' + ids.used);
 			var $dependsToggle = $('#' + ids.depends);
+			var $copyToggle = $('#' + ids.copy);
 
 			if ($fieldToggle.length) {
 				$fieldToggle.prop('checked', hideField);
@@ -593,6 +598,9 @@
 			}
 			if ($dependsToggle.length) {
 				$dependsToggle.prop('checked', hideDepends);
+			}
+			if ($copyToggle.length) {
+				$copyToggle.prop('checked', hideCopy);
 			}
 		}
 
@@ -628,6 +636,16 @@
 				console.warn('Gravity Conditional Compass: Could not save to localStorage', e);
 			}
 			$body.toggleClass('gfcc-hide-cond-depends', checked);
+		});
+
+		$(document).on('change', '#' + ids.copy, function () {
+			var checked = $(this).is(':checked');
+			try {
+				window.localStorage.setItem(keys.copy, checked ? '1' : '0');
+			} catch (e) {
+				console.warn('Gravity Conditional Compass: Could not save to localStorage', e);
+			}
+			$body.toggleClass('gfcc-hide-copy-badge', checked);
 		});
 	}
 

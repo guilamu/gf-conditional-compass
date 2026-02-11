@@ -46,6 +46,10 @@ body.gfcc-hide-cond-depends .gfcc-logic-type-any {
     display: none !important;
 }
 
+body.gfcc-hide-copy-badge .gfcc-copy-conditions-btn {
+    display: none !important;
+}
+
 /* Global toggle group in "No field selected" panel */
 .gfcc-global-field-id-toggle {
     margin-top: 12px;

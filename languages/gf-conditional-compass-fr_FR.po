@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Gravity Forms Conditional Compass 1.2.0\n"
 "Report-Msgid-Bugs-To: https://gravitywiz.com/\n"
 "POT-Creation-Date: 2025-11-27 20:15+0000\n"
-"PO-Revision-Date: 2026-02-11 19:58+0100\n"
+"PO-Revision-Date: 2026-02-11 21:45+0100\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -198,6 +198,10 @@ msgstr "Masquer les badges \"Dépend de\""
 #: includes/class-gf-conditional-compass-map.php:377
 msgid "Hide \"Used by\" badges"
 msgstr "Masquer les badges \"Utilisé par\""
+
+#: includes/class-gf-conditional-compass-map.php:383
+msgid "Hide \"Copy\" badges"
+msgstr "Masquer les badges \"Copier\""
 
 #: includes/class-gf-conditional-compass-map.php:386
 msgid "Conditional Logic Map"
