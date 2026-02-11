@@ -1,0 +1,617 @@
+.gfcc-inline-field-id {
+    background-color: #ecedf8;
+    border: 1px solid #d5d7e9;
+    border-radius: 40px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    padding: 0.1125rem 0.4625rem;
+    margin-bottom: 0.5rem;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 0.25rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.gfcc-inline-field-id:hover {
+    background-color: #dce0f5;
+    border-color: #b8bce0;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.gfcc-inline-field-id.not-traceable {
+    cursor: default;
+}
+
+.gfcc-inline-field-id.not-traceable:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+/* Global hides driven by the three toggles */
+body.gfcc-hide-field-id-badges .gfcc-inline-field-id {
+    display: none !important;
+}
+
+body.gfcc-hide-cond-used .gfcc-cond-to-separator,
+body.gfcc-hide-cond-used .gfcc-cond-to-field-id {
+    display: none !important;
+}
+
+body.gfcc-hide-cond-depends .gfcc-cond-separator,
+body.gfcc-hide-cond-depends .gfcc-cond-field-id,
+body.gfcc-hide-cond-depends .gfcc-logic-type-all,
+body.gfcc-hide-cond-depends .gfcc-logic-type-any {
+    display: none !important;
+}
+
+/* Global toggle group in "No field selected" panel */
+.gfcc-global-field-id-toggle {
+    margin-top: 12px;
+    padding-top: 8px;
+    border-top: 1px solid #dcdcde;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.gfcc-toggle-row {
+    display: flex;
+}
+
+/* Toggle styles (mirrors map toggles) */
+.gfcc-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+}
+
+.gfcc-toggle-input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.gfcc-toggle-slider {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 22px;
+    background-color: #dcdcde;
+    border-radius: 22px;
+    transition: background-color 0.3s ease;
+    flex-shrink: 0;
+}
+
+.gfcc-toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    left: 3px;
+    top: 3px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.gfcc-toggle-input:checked+.gfcc-toggle-slider {
+    background-color: #3858e9;
+}
+
+.gfcc-toggle-input:checked+.gfcc-toggle-slider::before {
+    transform: translateX(18px);
+}
+
+.gfcc-toggle-input:focus+.gfcc-toggle-slider {
+    box-shadow: 0 0 0 2px rgba(56, 88, 233, 0.3);
+}
+
+.gfcc-toggle-label {
+    font-size: 13px;
+    color: #1d2327;
+}
+
+.gfcc-toggle:hover .gfcc-toggle-label {
+    color: #0a4b78;
+}
+
+/* Existing badge and tooltip styles (unchanged) */
+.gfcc-cond-separator {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    margin: 0 0.15rem 0.5rem 0.15rem;
+    cursor: pointer;
+    padding: 0;
+    transition: transform 0.3s ease;
+    position: relative;
+    vertical-align: middle;
+}
+
+.gfcc-cond-separator:hover {
+    transform: scale(1.1);
+}
+
+.gfcc-cond-field-id {
+    background-color: #fff4e6;
+    border: 1px solid #ffb347;
+    border-radius: 40px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    padding: 0.1125rem 0.4625rem;
+    margin-bottom: 0.5rem;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 0.25rem;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+    z-index: 9999;
+}
+
+.gfcc-cond-field-id:hover {
+    background-color: #ffe4cc;
+    border-color: #ff9f2e;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 99999999;
+}
+
+.gfcc-cond-field-id-any {
+    background-color: #e6f7ed;
+    border: 1px solid #47c274;
+}
+
+.gfcc-cond-field-id-any:hover {
+    background-color: #d1f2dd;
+    border-color: #3ab366;
+}
+
+.gfcc-cond-to-separator {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    margin: 0 0.15rem 0.5rem 0.15rem;
+    cursor: pointer;
+    padding: 0;
+    transition: transform 0.3s ease;
+    position: relative;
+    vertical-align: middle;
+}
+
+.gfcc-cond-to-separator:hover {
+    transform: scale(1.1);
+}
+
+.gfcc-cond-to-field-id {
+    background-color: #e6f0ff;
+    border: 1px solid #4a90e2;
+    border-radius: 40px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    padding: 0.1125rem 0.4625rem;
+    margin-bottom: 0.5rem;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 0.25rem;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+    z-index: 9999;
+}
+
+.gfcc-cond-to-field-id:hover {
+    background-color: #d0e4ff;
+    border-color: #3a7bc8;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 99999999;
+}
+
+.gfcc-logic-type-all {
+    background-color: #fff4e6;
+    border: 1px solid #ffb347;
+    border-radius: 3px;
+    position: relative;
+    cursor: help;
+    z-index: 9999;
+}
+
+.gfcc-logic-type-any {
+    background-color: #e6f7ed;
+    border: 1px solid #47c274;
+    border-radius: 3px;
+    position: relative;
+    cursor: help;
+    z-index: 9999;
+}
+
+.gfcc-logic-type-all:hover,
+.gfcc-logic-type-any:hover {
+    z-index: 99999999;
+}
+
+/* Tooltip styles unchanged ... */
+.gfcc-logic-type-all:hover::after,
+.gfcc-logic-type-any:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: #fff;
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    white-space: nowrap;
+    font-size: 0.75rem;
+    margin-bottom: 0.5rem;
+    z-index: 99999999 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    pointer-events: none;
+}
+
+.gfcc-logic-type-all:hover::before,
+.gfcc-logic-type-any:hover::before {
+    content: "";
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #333;
+    z-index: 99999999 !important;
+    pointer-events: none;
+}
+
+.gfcc-cond-field-id:hover::after,
+.gfcc-cond-to-field-id:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: #fff;
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    white-space: nowrap;
+    font-size: 0.75rem;
+    margin-bottom: 0.5rem;
+    z-index: 99999999 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    pointer-events: none;
+}
+
+.gfcc-cond-field-id:hover::before,
+.gfcc-cond-to-field-id:hover::before {
+    content: "";
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #333;
+    z-index: 99999999 !important;
+    pointer-events: none;
+}
+
+.gfcc-cond-separator.collapsed,
+.gfcc-cond-to-separator.collapsed {
+    opacity: 0.5;
+}
+
+.gfcc-cond-separator.collapsed:hover,
+.gfcc-cond-to-separator.collapsed:hover {
+    opacity: 0.7;
+}
+
+.gfcc-vt-field-link {
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+/* Hide the Previous button when disabled (first step of Visual Trace) */
+.driver-popover-prev-btn[disabled] {
+    display: none !important;
+}
+
+/* ===== Copy/Paste Conditional Logic ===== */
+
+/* Copy badge in badge row (span, not button, to avoid GF admin button CSS) */
+.gfcc-copy-conditions-btn {
+    background-color: #f0e6ff;
+    border: 1px solid #b388e6;
+    border-radius: 40px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    padding: 0.1125rem 0.4625rem;
+    margin-bottom: 0.5rem;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 0.25rem;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+    z-index: 10;
+}
+
+.gfcc-copy-conditions-btn:hover,
+.gfcc-copy-conditions-btn:focus {
+    background-color: #e0ccff;
+    border-color: #9966d9;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    outline: none;
+}
+
+/* Modal overlay — separate fixed element (sibling of #gfcc-modal) */
+#gfcc-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 100100;
+    opacity: 0;
+    animation: gfcc-overlay-in 190ms ease-in-out forwards;
+}
+
+@keyframes gfcc-overlay-in {
+    to {
+        opacity: 1;
+    }
+}
+
+#gfcc-modal-overlay.closing {
+    animation: gfcc-overlay-out 190ms ease-in-out forwards;
+}
+
+@keyframes gfcc-overlay-out {
+    to {
+        opacity: 0;
+    }
+}
+
+/* Modal container — separate centered element */
+#gfcc-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 500px;
+    max-width: calc(100vw - 40px);
+    max-height: calc(100vh - 80px);
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+    z-index: 100101;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    transform: translate(-50%, -50%) scale(0.95);
+    opacity: 0;
+    animation: gfcc-modal-in 190ms ease-in-out forwards;
+}
+
+@keyframes gfcc-modal-in {
+    to {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+
+#gfcc-modal.closing {
+    animation: gfcc-modal-out 190ms ease-in-out forwards;
+}
+
+@keyframes gfcc-modal-out {
+    from {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+
+    to {
+        transform: translate(-50%, -50%) scale(0.95);
+        opacity: 0;
+    }
+}
+
+.gfcc-modal-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.gfcc-modal-header h3 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.gfcc-modal-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    color: #888;
+    padding: 0 4px;
+    line-height: 1;
+}
+
+.gfcc-modal-close:hover {
+    color: #333;
+}
+
+/* Search */
+.gfcc-modal-search {
+    padding: 12px 20px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.gfcc-modal-search input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    font-size: 13px;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.gfcc-modal-search input:focus {
+    border-color: #3858e9;
+    box-shadow: 0 0 0 2px rgba(56, 88, 233, 0.2);
+}
+
+/* Field list */
+.gfcc-modal-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0;
+    min-height: 150px;
+    max-height: 50vh;
+}
+
+.gfcc-modal-field-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 20px;
+    cursor: pointer;
+    transition: background 0.1s ease;
+    gap: 10px;
+    user-select: none;
+}
+
+.gfcc-modal-field-item:hover {
+    background: #f6f7f7;
+}
+
+.gfcc-modal-field-item.selected {
+    background: #eef2ff;
+}
+
+.gfcc-modal-field-item input[type="checkbox"] {
+    flex-shrink: 0;
+    margin: 0;
+}
+
+.gfcc-modal-field-label {
+    flex: 1;
+    font-size: 13px;
+    color: #1d2327;
+    min-width: 0;
+}
+
+.gfcc-modal-field-label .gfcc-modal-field-name {
+    font-weight: 500;
+}
+
+.gfcc-modal-field-label .gfcc-modal-field-id {
+    color: #888;
+    font-size: 11px;
+    margin-left: 4px;
+}
+
+.gfcc-modal-field-label .gfcc-modal-field-cond {
+    display: block;
+    font-size: 11px;
+    color: #999;
+    margin-top: 2px;
+}
+
+/* source field highlight */
+.gfcc-modal-field-item.source-field {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* Footer */
+.gfcc-modal-footer {
+    padding: 12px 20px;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.gfcc-modal-btn {
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid #dcdcde;
+    background: #f6f7f7;
+    color: #1d2327;
+    transition: all 0.15s ease;
+}
+
+.gfcc-modal-btn:hover {
+    background: #eee;
+}
+
+.gfcc-modal-btn-primary {
+    background: #3858e9;
+    color: #fff;
+    border-color: #3858e9;
+}
+
+.gfcc-modal-btn-primary:hover {
+    background: #2c48c4;
+}
+
+.gfcc-modal-btn-primary:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+/* Toast notification */
+.gfcc-toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 13px;
+    z-index: 100200;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    animation: gfcc-toast-in 0.3s ease, gfcc-toast-out 0.3s ease 2s forwards;
+}
+
+@keyframes gfcc-toast-in {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+@keyframes gfcc-toast-out {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
