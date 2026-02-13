@@ -530,122 +530,146 @@
 	}
 
 	/**
-	 * Initialize global field ID toggle functionality
-	 *
-	 * Handles the three global toggles for hiding badges in the form builder.
-	 * State is persisted in localStorage.
-	 *
-	 * @return {void}
+	 * [LEGACY] initGlobalFieldIdToggle — replaced by Editor Flyout integration.
+	 * Kept as no-op for safety.
 	 */
 	function initGlobalFieldIdToggle() {
-		// Cache body element
-		if (!$cachedElements.body) {
-			$cachedElements.body = $('body');
+		return;
+	}
+
+	/**
+	 * Initialize integration with Gravity Forms Editor Flyout
+	 *
+	 * Reads server-injected config, applies initial body classes, and waits
+	 * for GF's dialog content to be in the DOM to inject our toggles.
+	 */
+	function initEditorFlyoutIntegration() {
+		// Read config from GF admin config object (localized as gform_admin_config)
+		var config = null;
+
+		if (window.gform_admin_config &&
+			window.gform_admin_config.components &&
+			window.gform_admin_config.components.editor_button &&
+			window.gform_admin_config.components.editor_button.conditionalCompass) {
+			config = window.gform_admin_config.components.editor_button.conditionalCompass;
 		}
 
-		var $body = $cachedElements.body;
-
-		// Toggle IDs
-		var ids = {
-			field: 'gfcc-hide-field-id-badges-toggle',
-			used: 'gfcc-hide-used-deps-toggle',
-			depends: 'gfcc-hide-depends-deps-toggle',
-			copy: 'gfcc-hide-copy-badge-toggle'
-		};
-
-		// localStorage keys
-		var keys = {
-			field: 'gfcc-hide-field-id-badges',
-			used: 'gfcc-hide-cond-used',
-			depends: 'gfcc-hide-cond-depends',
-			copy: 'gfcc-hide-copy-badge'
-		};
-
-		// Avoid binding handlers multiple times
-		if ($body.data('gfcc-global-toggle-handlers-init')) {
+		if (!config) {
+			console.warn('[GFCC] Editor flyout config not found — skipping flyout integration.');
 			return;
 		}
-		$body.data('gfcc-global-toggle-handlers-init', true);
 
-		/**
-		 * Apply state from localStorage to body classes and checkboxes
-		 *
-		 * @return {void}
-		 */
-		function applyStateFromStorage() {
-			var hideField = window.localStorage.getItem(keys.field) === '1';
-			var hideUsed = window.localStorage.getItem(keys.used) === '1';
-			var hideDepends = window.localStorage.getItem(keys.depends) === '1';
-			var hideCopy = window.localStorage.getItem(keys.copy) === '1';
+		var i18n = config.i18n;
+		var $body = $('body');
 
-			// Apply body classes
-			$body.toggleClass('gfcc-hide-field-id-badges', hideField);
-			$body.toggleClass('gfcc-hide-cond-used', hideUsed);
-			$body.toggleClass('gfcc-hide-cond-depends', hideDepends);
-			$body.toggleClass('gfcc-hide-copy-badge', hideCopy);
+		// Apply initial state from server
+		$body.toggleClass('gfcc-hide-field-id-badges', !!config.gfccHideFieldId);
+		$body.toggleClass('gfcc-hide-cond-used', !!config.gfccHideUsed);
+		$body.toggleClass('gfcc-hide-cond-depends', !!config.gfccHideDepends);
+		$body.toggleClass('gfcc-hide-copy-badge', !!config.gfccHideCopy);
 
-			// Sync checkboxes if they exist (on Conditional Compass settings page)
-			var $fieldToggle = $('#' + ids.field);
-			var $usedToggle = $('#' + ids.used);
-			var $dependsToggle = $('#' + ids.depends);
-			var $copyToggle = $('#' + ids.copy);
+		// Poll for [data-js="gform-dialog-content"] — GF's editor-button
+		// JS loads asynchronously as webpack chunk 957
+		var attempts = 0;
+		var maxAttempts = 50;
+		var pollInterval = setInterval(function () {
+			attempts++;
+			var dialogContent = document.querySelector('[data-js="gform-dialog-content"]');
 
-			if ($fieldToggle.length) {
-				$fieldToggle.prop('checked', hideField);
+			if (dialogContent) {
+				clearInterval(pollInterval);
+				if (!dialogContent.querySelector('.gfcc-flyout-separator')) {
+					injectFlyoutToggles(dialogContent, config, i18n);
+				}
+			} else if (attempts >= maxAttempts) {
+				clearInterval(pollInterval);
+				console.warn('[GFCC] Dialog content [data-js="gform-dialog-content"] not found after ' + maxAttempts + ' attempts.');
 			}
-			if ($usedToggle.length) {
-				$usedToggle.prop('checked', hideUsed);
-			}
-			if ($dependsToggle.length) {
-				$dependsToggle.prop('checked', hideDepends);
-			}
-			if ($copyToggle.length) {
-				$copyToggle.prop('checked', hideCopy);
-			}
+		}, 200);
+
+		// Listen for live toggle updates to sync body classes
+		$(document).on('gfcc_setting_changed', function (e, setting, value) {
+			if (setting === 'gfcc_hide_field_id_badges') { config.gfccHideFieldId = value; $body.toggleClass('gfcc-hide-field-id-badges', value); }
+			if (setting === 'gfcc_hide_used_deps') { config.gfccHideUsed = value; $body.toggleClass('gfcc-hide-cond-used', value); }
+			if (setting === 'gfcc_hide_depends_deps') { config.gfccHideDepends = value; $body.toggleClass('gfcc-hide-cond-depends', value); }
+			if (setting === 'gfcc_hide_copy_badge') { config.gfccHideCopy = value; $body.toggleClass('gfcc-hide-copy-badge', value); }
+		});
+	}
+
+	/**
+	 * Inject Conditional Compass toggles into the Editor Preferences dialog
+	 *
+	 * Uses GF's own Toggle component (gform.components.admin.html.elements.Toggle)
+	 * to create toggles that match native "Compact View" / "Show Field IDs" exactly.
+	 *
+	 * @param {Element} dialogContent  The [data-js="gform-dialog-content"] element
+	 * @param {Object}  config         The server-injected config object
+	 * @param {Object}  i18n           Translation strings
+	 */
+	function injectFlyoutToggles(dialogContent, config, i18n) {
+		// Get GF's Toggle component
+		var GFToggle = window.gform &&
+			window.gform.components &&
+			window.gform.components.admin &&
+			window.gform.components.admin.html &&
+			window.gform.components.admin.html.elements &&
+			window.gform.components.admin.html.elements.Toggle;
+
+		if (!GFToggle) {
+			console.warn('[GFCC] GF Toggle component not available — cannot render flyout toggles.');
+			return;
 		}
 
-		// Apply saved state immediately
-		applyStateFromStorage();
+		// Separator and section header
+		var separator = '<div class="gfcc-flyout-separator" style="border-top:1px solid #e1e7ec; margin:20px 0 10px; padding-top:10px;">';
+		separator += '<strong style="font-size:13px; color:#3a4a5b;">Conditional Compass</strong>';
+		separator += '</div>';
+		dialogContent.insertAdjacentHTML('beforeend', separator);
 
-		// Bind change handlers using event delegation
-		$(document).on('change', '#' + ids.field, function () {
-			var checked = $(this).is(':checked');
-			try {
-				window.localStorage.setItem(keys.field, checked ? '1' : '0');
-			} catch (e) {
-				console.warn('Gravity Conditional Compass: Could not save to localStorage', e);
-			}
-			$body.toggleClass('gfcc-hide-field-id-badges', checked);
-		});
+		// Define our toggles
+		var toggleDefs = [
+			{ id: 'gfcc-toggle-field-id', label: i18n.hideFieldId, checked: config.gfccHideFieldId, setting: 'gfcc_hide_field_id_badges' },
+			{ id: 'gfcc-toggle-depends', label: i18n.hideDepends, checked: config.gfccHideDepends, setting: 'gfcc_hide_depends_deps' },
+			{ id: 'gfcc-toggle-used', label: i18n.hideUsed, checked: config.gfccHideUsed, setting: 'gfcc_hide_used_deps' },
+			{ id: 'gfcc-toggle-copy', label: i18n.hideCopy, checked: config.gfccHideCopy, setting: 'gfcc_hide_copy_badge' }
+		];
 
-		$(document).on('change', '#' + ids.used, function () {
-			var checked = $(this).is(':checked');
-			try {
-				window.localStorage.setItem(keys.used, checked ? '1' : '0');
-			} catch (e) {
-				console.warn('Gravity Conditional Compass: Could not save to localStorage', e);
-			}
-			$body.toggleClass('gfcc-hide-cond-used', checked);
-		});
+		// Create each toggle using GF's native Toggle component
+		toggleDefs.forEach(function (t) {
+			var toggle = new GFToggle({
+				customAttributes: { 'data-js': 'gfcc-flyout-toggle' },
+				id: t.id,
+				icons: true,
+				label: t.label,
+				labelPosition: 'right',
+				labelVisible: true,
+				name: t.label,
+				target: '[data-js="gform-dialog-content"]',
+				targetPosition: 'beforeend',
+				initialChecked: t.checked,
+				theme: 'cosmos'
+			});
 
-		$(document).on('change', '#' + ids.depends, function () {
-			var checked = $(this).is(':checked');
-			try {
-				window.localStorage.setItem(keys.depends, checked ? '1' : '0');
-			} catch (e) {
-				console.warn('Gravity Conditional Compass: Could not save to localStorage', e);
-			}
-			$body.toggleClass('gfcc-hide-cond-depends', checked);
-		});
+			// Bind change event on the actual input
+			var input = toggle.elements && toggle.elements.input;
+			if (input) {
+				input.classList.add('gfcc-setting-toggle');
+				input.setAttribute('data-setting', t.setting);
 
-		$(document).on('change', '#' + ids.copy, function () {
-			var checked = $(this).is(':checked');
-			try {
-				window.localStorage.setItem(keys.copy, checked ? '1' : '0');
-			} catch (e) {
-				console.warn('Gravity Conditional Compass: Could not save to localStorage', e);
+				input.addEventListener('change', function () {
+					var value = input.checked;
+
+					// Update body classes immediately
+					$(document).trigger('gfcc_setting_changed', [t.setting, value]);
+
+					// Persist to server
+					$.post(window.ajaxurl, {
+						action: 'gfcc_save_editor_setting',
+						setting: t.setting,
+						value: value ? 1 : 0
+					});
+				});
 			}
-			$body.toggleClass('gfcc-hide-copy-badge', checked);
 		});
 	}
 
@@ -658,7 +682,7 @@
 		// Initial badge update after a short delay to ensure DOM is ready
 		setTimeout(function () {
 			updateConditionalBadges();
-			initGlobalFieldIdToggle();
+			initEditorFlyoutIntegration();
 		}, 500);
 
 		// Listen for field settings load
@@ -713,7 +737,6 @@
 
 				if (shouldUpdate) {
 					debouncedUpdateConditionalBadges();
-					initGlobalFieldIdToggle();
 				}
 			});
 

@@ -70,7 +70,7 @@ The plugin works with any recent version of Gravity Forms. It hooks into the sta
 
 ### Can I hide certain badge types?
 
-Yes. Use the global toggles in the form editor settings panel to hide field ID badges, "is used" badges, or "depends on" badges independently.
+Yes. Open the **Editor Preferences** flyout (cog icon next to the Save button) and use the Conditional Compass toggles to hide Field ID, "Depends on", "Used by", or "Copy" badges independently. Settings are saved per user.
 
 ### How does the auto-update work?
 
@@ -106,6 +106,11 @@ gf-conditional-compass/
 ```
 
 ## Changelog
+
+### 1.2.1 - 2026-02-13
+- **New:** Badge visibility toggles moved to the native Gravity Forms **Editor Preferences** flyout (cog icon)
+- **New:** Per-user toggle persistence via `user_meta` (replaces localStorage)
+- **New:** AJAX handler for saving editor preferences server-side
 
 ### 1.2.0 - 2026-02-11
 - **New:** Copy/Paste Conditional Logic — copy rules from one field and paste them to multiple fields via a searchable modal

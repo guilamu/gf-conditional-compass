@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Gravity Forms Conditional Compass 1.2.0\n"
+"Project-Id-Version: Gravity Forms Conditional Compass 1.2.1\n"
 "Report-Msgid-Bugs-To: https://gravitywiz.com/\n"
-"POT-Creation-Date: 2025-11-27 20:15+0000\n"
+"POT-Creation-Date: 2026-02-13 19:00+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -185,18 +185,22 @@ msgid "Form builder settings"
 msgstr ""
 
 #: includes/class-gf-conditional-compass-map.php:365
+#: gf-conditional-compass.php:334
 msgid "Hide Field ID badges"
 msgstr ""
 
 #: includes/class-gf-conditional-compass-map.php:371
+#: gf-conditional-compass.php:335
 msgid "Hide \"Depends on\" badges"
 msgstr ""
 
 #: includes/class-gf-conditional-compass-map.php:377
+#: gf-conditional-compass.php:336
 msgid "Hide \"Used by\" badges"
 msgstr ""
 
 #: includes/class-gf-conditional-compass-map.php:383
+#: gf-conditional-compass.php:337
 msgid "Hide \"Copy\" badges"
 msgstr ""
 
@@ -274,3 +278,4 @@ msgstr ""
 #, php-format
 msgid "Conditions pasted to %d field(s)!"
 msgstr ""
+

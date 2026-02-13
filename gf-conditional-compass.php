@@ -4,7 +4,7 @@
  * Plugin Name: Gravity Forms Conditional Compass
  * Plugin URI: https://github.com/guilamu/Gravity-Forms-Conditional-Compass
  * Description: Display field IDs and conditional logic dependencies in the Gravity Forms editor with live updates and clickable badges
- * Version: 1.2.0
+ * Version: 1.2.1
  * Author: Guilamu
  * Author URI: https://github.com/guilamu
  * Text Domain: gf-conditional-compass
@@ -21,7 +21,7 @@ if (! defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('GFFIELDIDCOND_VERSION', '1.2.0');
+define('GFFIELDIDCOND_VERSION', '1.2.1');
 define('GFFIELDIDCOND_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('GFFIELDIDCOND_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -299,3 +299,69 @@ function gf_field_id_cond_load_conditional_map()
 	}
 }
 add_action('gform_loaded', 'gf_field_id_cond_load_conditional_map');
+
+/**
+ * Filter Gravity Forms Admin Config to inject our settings into the Editor Preferences flyout.
+ */
+add_filter('gform_config_data_gform_admin_config', function ($data) {
+	// Guard: only inject if the editor_button component exists
+	if (! isset($data['components']['editor_button'])) {
+		return $data;
+	}
+
+	$user_id = get_current_user_id();
+
+	// Define our settings keys (JS key => user_meta key)
+	$settings = array(
+		'gfccHideFieldId' => 'gfcc_hide_field_id_badges',
+		'gfccHideDepends' => 'gfcc_hide_depends_deps',
+		'gfccHideUsed'    => 'gfcc_hide_used_deps',
+		'gfccHideCopy'    => 'gfcc_hide_copy_badge',
+	);
+
+	// Inject into the editor_button component config
+	if (! isset($data['components']['editor_button']['conditionalCompass'])) {
+		$data['components']['editor_button']['conditionalCompass'] = array();
+	}
+
+	foreach ($settings as $jsKey => $metaKey) {
+		$val = get_user_meta($user_id, $metaKey, true);
+		$data['components']['editor_button']['conditionalCompass'][$jsKey] = ($val === '1');
+	}
+
+	// Add translations for the flyout toggles
+	$data['components']['editor_button']['conditionalCompass']['i18n'] = array(
+		'hideFieldId' => __('Hide Field ID badges', 'gf-conditional-compass'),
+		'hideDepends' => __('Hide "Depends on" badges', 'gf-conditional-compass'),
+		'hideUsed'    => __('Hide "Used by" badges', 'gf-conditional-compass'),
+		'hideCopy'    => __('Hide "Copy" badges', 'gf-conditional-compass'),
+	);
+
+	return $data;
+});
+
+/**
+ * AJAX handler for saving Conditional Compass editor settings.
+ */
+add_action('wp_ajax_gfcc_save_editor_setting', function () {
+	if (! current_user_can('gravityforms_edit_forms')) {
+		wp_send_json_error('Unauthorized');
+	}
+
+	$setting = sanitize_text_field($_POST['setting']);
+	$value   = sanitize_text_field($_POST['value']);
+
+	$allowed_settings = array(
+		'gfcc_hide_field_id_badges',
+		'gfcc_hide_depends_deps',
+		'gfcc_hide_used_deps',
+		'gfcc_hide_copy_badge',
+	);
+
+	if (in_array($setting, $allowed_settings, true)) {
+		update_user_meta(get_current_user_id(), $setting, $value);
+		wp_send_json_success();
+	} else {
+		wp_send_json_error('Invalid setting');
+	}
+});
