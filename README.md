@@ -108,7 +108,7 @@ gf-conditional-compass/
 ## Changelog
 
 ### 1.2.1 - 2026-02-13
-- **New:** Badge visibility toggles moved to the native Gravity Forms **Editor Preferences** flyout (cog icon)
+- **New:** Badge visibility toggles moved to the native Gravity Forms **Editor Preferences** flyout (cog icon). Thanks to David from GravityWiz for the idea!
 - **New:** Per-user toggle persistence via `user_meta` (replaces localStorage)
 - **New:** AJAX handler for saving editor preferences server-side
 
