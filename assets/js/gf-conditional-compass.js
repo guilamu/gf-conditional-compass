@@ -555,7 +555,7 @@
 		}
 
 		if (!config) {
-			console.warn('[GFCC] Editor flyout config not found — skipping flyout integration.');
+			console.debug('[GFCC] Editor flyout config not found — skipping flyout integration.');
 			return;
 		}
 

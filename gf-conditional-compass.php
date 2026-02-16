@@ -4,7 +4,7 @@
  * Plugin Name: Gravity Forms Conditional Compass
  * Plugin URI: https://github.com/guilamu/Gravity-Forms-Conditional-Compass
  * Description: Display field IDs and conditional logic dependencies in the Gravity Forms editor with live updates and clickable badges
- * Version: 1.2.1
+ * Version: 1.2.2
  * Author: Guilamu
  * Author URI: https://github.com/guilamu
  * Text Domain: gf-conditional-compass
@@ -21,7 +21,7 @@ if (! defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('GFFIELDIDCOND_VERSION', '1.2.1');
+define('GFFIELDIDCOND_VERSION', '1.2.2');
 define('GFFIELDIDCOND_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('GFFIELDIDCOND_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -97,7 +97,7 @@ function gf_field_id_cond_enqueue_styles()
 	$current_screen = get_current_screen();
 
 	// Only load on Gravity Forms editor pages
-	if ($current_screen && strpos($current_screen->id, 'gf_edit_forms') !== false) {
+	if ($current_screen && strpos($current_screen->id, 'gf_edit_forms') !== false && GFCommon::is_form_editor()) {
 		wp_enqueue_style(
 			'driver-js',
 			GFFIELDIDCOND_PLUGIN_URL . 'assets/css/driver.css',
@@ -128,7 +128,7 @@ function gf_field_id_cond_inline_css_fallback()
 	$current_screen = get_current_screen();
 
 	// Only on Gravity Forms editor pages
-	if ($current_screen && strpos($current_screen->id, 'gf_edit_forms') !== false) {
+	if ($current_screen && strpos($current_screen->id, 'gf_edit_forms') !== false && GFCommon::is_form_editor()) {
 		$css_url = GFFIELDIDCOND_PLUGIN_URL . 'assets/css/gf-conditional-compass.css';
 		echo '<link rel="stylesheet" href="' . esc_url($css_url) . '?ver=' . esc_attr(GFFIELDIDCOND_VERSION) . '" type="text/css" media="all" />';
 	}
@@ -149,7 +149,7 @@ function gf_field_id_cond_enqueue_scripts()
 	$current_screen = get_current_screen();
 
 	// Only load on Gravity Forms editor pages
-	if ($current_screen && strpos($current_screen->id, 'gf_edit_forms') !== false) {
+	if ($current_screen && strpos($current_screen->id, 'gf_edit_forms') !== false && GFCommon::is_form_editor()) {
 		wp_enqueue_script(
 			'driver-js',
 			GFFIELDIDCOND_PLUGIN_URL . 'assets/js/driver.js',
