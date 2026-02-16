@@ -836,6 +836,7 @@
 		});
 
 		// Build modal HTML - overlay and modal as SIBLING elements (not nested)
+		var hideCondLabel = gfFieldIdCondTranslations.hideConditionSummaries || 'Hide condition summaries';
 		var modalHtml =
 			'<div id="gfcc-modal-overlay"></div>' +
 			'<div id="gfcc-modal">' +
@@ -843,8 +844,14 @@
 			'<h3>' + gfFieldIdCondTranslations.selectFieldsToPaste.replace('%d', sourceFieldId) + '</h3>' +
 			'<button class="gfcc-modal-close" type="button">&times;</button>' +
 			'</div>' +
+			'<div class="gfcc-modal-toolbar">' +
 			'<div class="gfcc-modal-search">' +
 			'<input type="text" placeholder="' + gfFieldIdCondTranslations.searchFields + '" />' +
+			'</div>' +
+			'<div class="gform-toggle gform-toggle--theme-cosmos gform-toggle--label-right gform-toggle--size-s gfcc-modal-toggle">' +
+			'<input class="gform-toggle__toggle gform-toggle__toggle--has-icons" id="gfcc-modal-hide-cond-toggle" type="checkbox">' +
+			'<label class="gform-toggle__label" for="gfcc-modal-hide-cond-toggle">' + hideCondLabel + '</label>' +
+			'</div>' +
 			'</div>' +
 			'<div class="gfcc-modal-list">' +
 			listHtml +
@@ -858,6 +865,11 @@
 			'</div>';
 
 		$('body').append(modalHtml);
+
+		// Toggle to hide/show condition summaries in modal
+		$('#gfcc-modal-hide-cond-toggle').on('change', function () {
+			$('#gfcc-modal').toggleClass('gfcc-hide-cond', this.checked);
+		});
 
 		// Focus search
 		$('#gfcc-modal .gfcc-modal-search input').focus();

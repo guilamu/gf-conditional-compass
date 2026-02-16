@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Gravity Forms Conditional Compass 1.2.1\n"
+"Project-Id-Version: Gravity Forms Conditional Compass 1.2.3\n"
 "Report-Msgid-Bugs-To: https://gravitywiz.com/\n"
-"POT-Creation-Date: 2026-02-13 19:00+0000\n"
+"POT-Creation-Date: 2026-02-16 00:00+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -277,5 +277,10 @@ msgstr ""
 #: gf-conditional-compass.php:155
 #, php-format
 msgid "Conditions pasted to %d field(s)!"
+msgstr ""
+
+#: gf-conditional-compass.php:209
+#: includes/class-gf-conditional-compass-map.php:173
+msgid "Hide condition summaries"
 msgstr ""
 

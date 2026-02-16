@@ -4,7 +4,7 @@
  * Plugin Name: Gravity Forms Conditional Compass
  * Plugin URI: https://github.com/guilamu/Gravity-Forms-Conditional-Compass
  * Description: Display field IDs and conditional logic dependencies in the Gravity Forms editor with live updates and clickable badges
- * Version: 1.2.2
+ * Version: 1.2.3
  * Author: Guilamu
  * Author URI: https://github.com/guilamu
  * Text Domain: gf-conditional-compass
@@ -21,7 +21,7 @@ if (! defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('GFFIELDIDCOND_VERSION', '1.2.2');
+define('GFFIELDIDCOND_VERSION', '1.2.3');
 define('GFFIELDIDCOND_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('GFFIELDIDCOND_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -206,6 +206,7 @@ function gf_field_id_cond_enqueue_scripts()
 				'noConditionsToCopy'        => __('No conditions to copy on this field.', 'gf-conditional-compass'),
 				'conditionsCopied'          => __('Conditions copied!', 'gf-conditional-compass'),
 				'conditionsPasted'          => __('Conditions pasted to %d field(s)!', 'gf-conditional-compass'),
+				'hideConditionSummaries'    => __('Hide condition summaries', 'gf-conditional-compass'),
 				'operators'                 => array(
 					'is'                 => __('is', 'gf-conditional-compass'),
 					'isnot'              => __('is not', 'gf-conditional-compass'),

@@ -170,6 +170,7 @@ class GF_Conditional_Logic_Map
 				'hideFieldIdBadges'         => __('Hide field ID badges', 'gf-conditional-compass'),
 				'hideUsedDependencies'      => __('Hide "is used" dependencies', 'gf-conditional-compass'),
 				'hideDependsOnDependencies' => __('Hide "depends on" dependencies', 'gf-conditional-compass'),
+				'hideConditionSummaries'    => __('Hide condition summaries', 'gf-conditional-compass'),
 				'operators'                 => array(
 					'is'                   => __('is', 'gf-conditional-compass'),
 					'isnot'                => __('is not', 'gf-conditional-compass'),

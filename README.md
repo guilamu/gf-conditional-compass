@@ -107,6 +107,9 @@ gf-conditional-compass/
 
 ## Changelog
 
+### 1.2.3 - 2026-02-16
+- **New:** "Hide condition summaries" toggle in the Copy/Paste modal — uses the native Gravity Forms toggle to show or hide existing condition text per field
+
 ### 1.2.2 - 2026-02-16
 - **Fixed:** Console warning `[GFCC] Editor flyout config not found` on the Form List page
 - **Fixed:** Refined script/style enqueuing to only target the Gravity Forms editor
