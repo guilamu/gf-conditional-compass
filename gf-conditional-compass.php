@@ -2,14 +2,14 @@
 
 /**
  * Plugin Name: Gravity Forms Conditional Compass
- * Plugin URI: https://github.com/guilamu/Gravity-Forms-Conditional-Compass
+ * Plugin URI: https://github.com/guilamu/gf-conditional-compass
  * Description: Display field IDs and conditional logic dependencies in the Gravity Forms editor with live updates and clickable badges
- * Version: 1.2.3
+ * Version: 1.3.0
  * Author: Guilamu
  * Author URI: https://github.com/guilamu
  * Text Domain: gf-conditional-compass
  * Domain Path: /languages
- * Update URI: https://github.com/guilamu/Gravity-Forms-Conditional-Compass/
+ * Update URI: https://github.com/guilamu/gf-conditional-compass/
  * Requires at least: 5.0
  * Requires PHP: 7.0
  * License: AGPL-3.0-or-later
@@ -21,7 +21,7 @@ if (! defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('GFFIELDIDCOND_VERSION', '1.2.3');
+define('GFFIELDIDCOND_VERSION', '1.3.0');
 define('GFFIELDIDCOND_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('GFFIELDIDCOND_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -37,13 +37,13 @@ add_action('plugins_loaded', function () {
 			'slug'        => 'gf-conditional-compass',
 			'name'        => 'Gravity Forms Conditional Compass',
 			'version'     => GFFIELDIDCOND_VERSION,
-			'github_repo' => 'guilamu/Gravity-Forms-Conditional-Compass',
+			'github_repo' => 'guilamu/gf-conditional-compass',
 		));
 	}
 }, 20);
 
 /**
- * Add "Report a Bug" link to plugin row meta
+ * Add plugin row meta links.
  *
  * @param array  $links Plugin meta links.
  * @param string $file  Plugin file path.
@@ -54,6 +54,16 @@ function gfcc_plugin_row_meta($links, $file)
 	if (plugin_basename(__FILE__) !== $file) {
 		return $links;
 	}
+
+	$links[] = sprintf(
+		'<a href="%s" class="thickbox open-plugin-details-modal" aria-label="%s" data-title="%s">%s</a>',
+		esc_url(self_admin_url(
+			'plugin-install.php?tab=plugin-information&plugin=gf-conditional-compass&TB_iframe=true&width=772&height=926'
+		)),
+		esc_attr__('More information about Gravity Forms Conditional Compass', 'gf-conditional-compass'),
+		esc_attr__('Gravity Forms Conditional Compass', 'gf-conditional-compass'),
+		esc_html__('View details', 'gf-conditional-compass')
+	);
 
 	if (class_exists('Guilamu_Bug_Reporter')) {
 		$links[] = sprintf(
@@ -263,13 +273,18 @@ add_filter('gform_field_content', function ($content, $field) {
 	);
 	$badges  .= '</span>';
 
-	// Insert badges after </label> or </legend> using regex
-	$search  = '<\\/label>|<\\/legend>';
-	$replace = sprintf('\\0 %s', $badges);
-	$new     = preg_replace("/$search/", $replace, $content, 1);
+	// Section fields render their title as an h2/h3.gsection_title instead of a label/legend.
+	if (isset($field->type) && $field->type === 'section') {
+		$new = preg_replace('/(<h[23]\s+class=(?:"|\')gsection_title(?:"|\')>.*?<\/h[23]>)/s', '$1 ' . $badges, $content, 1);
+	} else {
+		// Insert badges after </label> or </legend> using regex.
+		$search  = '<\\/label>|<\\/legend>';
+		$replace = sprintf('\\0 %s', $badges);
+		$new     = preg_replace("/$search/", $replace, $content, 1);
+	}
 
 	// Safety: if preg_replace fails, fall back to original content
-	if ($new === null) {
+	if ($new === null || $new === $content) {
 		return $content;
 	}
 

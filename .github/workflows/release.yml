@@ -12,6 +12,7 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -22,10 +23,8 @@ jobs:
 
       - name: Create plugin zip
         run: |
-          # Create a temporary directory with the correct folder name
           mkdir -p build/gf-conditional-compass
-          
-          # Copy plugin files (excluding git, github, and build artifacts)
+
           rsync -av --exclude='.git' \
                     --exclude='.github' \
                     --exclude='build' \
@@ -37,11 +36,9 @@ jobs:
                     --exclude='.DS_Store' \
                     --exclude='screenshot*.*' \
                     ./ build/gf-conditional-compass/
-          
-          # Include README.md (useful for users)
+
           cp README.md build/gf-conditional-compass/ 2>/dev/null || true
-          
-          # Create the zip file
+
           cd build
           zip -r ../gf-conditional-compass.zip gf-conditional-compass
           cd ..

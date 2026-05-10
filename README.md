@@ -5,49 +5,38 @@
 
 Display field IDs, conditional logic badges, and an interactive visual trace directly in the Gravity Forms editor — so you always know which fields are pulling the strings.
 
-## Form Editor Badges
+## Inspect Conditional Logic
 
-![Plugin Screenshot](https://github.com/guilamu/Gravity-Forms-Conditional-Compass/blob/main/screenshot-3.png)![Plugin Screenshot](https://github.com/guilamu/Gravity-Forms-Conditional-Compass/blob/main/screenshot-2.png)
+![Plugin Screenshot](https://github.com/guilamu/gf-conditional-compass/blob/main/screenshot-3.png)![Plugin Screenshot](https://github.com/guilamu/gf-conditional-compass/blob/main/screenshot-2.png)
 
-- **ID badges** show each field's unique identifier inline with its label
-- **COND badges** reveal which fields are referenced in conditional logic rules
-- **ALL/ANY indicators** display the logic type when multiple conditions are configured
-- **Arrow symbols (→ / ←)** mark fields that have or are used in conditional logic
-- **Tooltips** describe the full rule in plain language on hover
-- **Clickable** — click any COND badge to jump to that field's conditional logic settings
+- See field IDs inline with supported fields in the Gravity Forms editor, including section breaks
+- Open a field's conditional logic settings by clicking any dependency badge in the builder canvas
+- Spot upstream and downstream logic relationships with inline arrows, ALL/ANY indicators, and plain-language tooltips
 
-## Visual Trace
+## Trace And Reuse Rules
 
-- Click any **Field ID Badge** to launch an interactive guided tour of the field's conditional logic
-- Navigate **upstream dependencies** (fields this field depends on) and **downstream effects** (fields that depend on it)
-- Natural language descriptions explain each rule inside the popover
-- Click field names inside the popover to re-centre the trace on a different field
+- Launch a guided visual trace from any clickable field ID badge to follow dependencies step by step
+- Copy one field's conditional logic and paste it to multiple target fields with search and Shift+Click range selection
+- Choose whether condition summaries stay visible while you review copied rules and target fields
 
-## Copy/Paste Conditional Logic
+## Document The Full Map
 
-- Copy conditional logic rules from one field and paste them to multiple other fields at once
-- Search and select target fields in a modal with checkboxes and Shift+Click range selection
-- Conditions are deep-copied — changes to the source afterwards do not affect pasted fields
-
-## Conditional Logic Map
-
-- Access a full-page text map of every conditional logic relationship in your form
-- Filter by **DEPENDS ON** or **USED BY** relationships
-- Toggle field numbers or types for a cleaner view
-- Copy the entire map to clipboard for documentation
+- Open a full-page conditional logic map from **Settings → Conditional Logic Map**
+- Filter the output by **DEPENDS ON** or **USED BY** relationships to audit large forms faster
+- Copy the generated map to the clipboard for documentation, QA notes, or client handoff
 
 ## Key Features
 
-- **Multilingual:** All strings are internationalized (English and French included)
-- **Translation-Ready:** `.pot` template included — add any language with Poedit
-- **Secure:** Nonce-verified, capability-checked, escaped output throughout
-- **GitHub Updates:** Automatic updates from GitHub releases via the WordPress admin
-- **Performance:** Debounced updates, DOM caching, and efficient event handling
-- **Accessible:** Full keyboard navigation (Tab, Enter, Space) with ARIA roles
+- **Gravity Forms Native UI:** Works inside the existing builder canvas, conditional logic panel, and editor preferences flyout
+- **Multilingual:** All interface strings are available in English and French
+- **Translation-Ready:** `.pot` and source `.po` files are included for additional locales
+- **Secure:** Uses nonce verification, capability checks, and escaped output in admin flows
+- **GitHub Updates:** Supports WordPress-style update checks and one-click installs from GitHub releases
+- **Accessible:** Includes keyboard navigation for badges, toggles, and modal actions
 
 ## Requirements
 
-- Gravity Forms plugin (any recent version)
+- Gravity Forms 2.10 or higher
 - WordPress 5.0 or higher
 - PHP 7.0 or higher
 
@@ -55,8 +44,8 @@ Display field IDs, conditional logic badges, and an interactive visual trace dir
 
 1. Upload the `gf-conditional-compass` folder to `/wp-content/plugins/`
 2. Activate the plugin through the **Plugins** menu in WordPress
-3. Edit any Gravity Form — badges appear automatically
-4. Access the **Conditional Logic Map** from the form **Settings** menu
+3. Open any form from the **Forms** menu to load the editor enhancements automatically
+4. Use **Settings → Conditional Logic Map** to review the full logic map, or open **Editor Preferences** to hide badge types per user
 
 ## FAQ
 
@@ -66,7 +55,7 @@ No. Once activated, badges and the Visual Trace are available immediately in the
 
 ### Which Gravity Forms versions are supported?
 
-The plugin works with any recent version of Gravity Forms. It hooks into the standard `gform_field_content` filter and uses the public JavaScript API.
+The plugin targets Gravity Forms 2.10 or higher. It relies on Gravity Forms' public editor APIs and the standard `gform_field_content` filter.
 
 ### Can I hide certain badge types?
 
@@ -76,36 +65,57 @@ Yes. Open the **Editor Preferences** flyout (cog icon next to the Save button) a
 
 The plugin checks GitHub releases for newer versions and presents updates through the standard **Dashboard → Updates** screen — exactly like WordPress.org-hosted plugins.
 
+### Can I customize the editor markup with a hook?
+
+Yes. The plugin layers on top of Gravity Forms editor markup, so you can still add your own `gform_field_content` customization after Conditional Compass runs:
+
+```php
+add_filter( 'gform_field_content', function( $content, $field ) {
+  if ( function_exists( 'GFCommon::is_form_editor' ) && GFCommon::is_form_editor() && 3 === (int) $field->id ) {
+    $content .= '<p class="my-admin-note">Review this field before publishing.</p>';
+  }
+
+  return $content;
+}, 20, 2 );
+```
+
 ## Project Structure
 
 ```
 gf-conditional-compass/
-├── gf-conditional-compass.php                  # Main plugin file
-├── includes/
-│   ├── class-gf-conditional-compass-map.php    # Conditional Logic Map settings page
-│   └── class-github-updater.php                # GitHub auto-updates
+├── gf-conditional-compass.php                  # Main plugin bootstrap
+├── README.md                                   # Plugin documentation
+├── LICENSE                                     # Plugin license
 ├── assets/
 │   ├── css/
 │   │   ├── gf-conditional-compass.css          # Form builder badge styles
 │   │   └── gf-conditional-compass-map.css      # Conditional Logic Map page styles
 │   ├── images/
-│   │   ├── icon-128x128.png
-│   │   ├── icon-256x256.png
-│   │   ├── logo.bw.svg
-│   │   ├── logo.png
+│   │   ├── icon-128x128.png                    # Small plugin icon
+│   │   ├── icon-256x256.png                    # Large plugin icon
+│   │   ├── logo.bw.svg                         # Monochrome logo asset
+│   │   ├── logo.png                            # Main plugin logo
 │   │   └── randomize.png                       # Arrow icon for badges
 │   └── js/
-│       ├── gf-conditional-compass.js           # Form builder functionality
-│       └── gf-conditional-compass-map.js       # Conditional Logic Map functionality
+│       ├── gf-conditional-compass.js           # Form builder interactions
+│       └── gf-conditional-compass-map.js       # Conditional Logic Map interactions
+├── includes/
+│   ├── class-gf-conditional-compass-map.php    # Conditional Logic Map settings page
+│   ├── class-github-updater.php                # GitHub auto-updates
+│   └── Parsedown.php                           # Markdown parser for the plugin details modal
 ├── languages/
 │   ├── gf-conditional-compass-fr_FR.mo         # French translation (binary)
 │   ├── gf-conditional-compass-fr_FR.po         # French translation (source)
 │   └── gf-conditional-compass.pot              # Translation template
-├── LICENSE
-└── README.md
 ```
 
 ## Changelog
+
+### 1.3.0 - 2026-05-10
+- **New:** Added a WordPress-style "View details" modal that renders README tabs, GitHub release notes, and a styled plugin banner
+- **Improved:** Refined the GitHub updater to use the canonical repository slug, complete WordPress update metadata, and Parsedown-based README rendering
+- **Improved:** Reorganized the README to follow the WordPress plugin documentation reference
+- **Fixed:** Conditional Compass badges now appear on Section fields in the form editor
 
 ### 1.2.3 - 2026-02-16
 - **New:** "Hide condition summaries" toggle in the Copy/Paste modal — uses the native Gravity Forms toggle to show or hide existing condition text per field
