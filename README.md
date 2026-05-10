@@ -114,7 +114,6 @@ gf-conditional-compass/
 ### 1.3.0 - 2026-05-10
 - **New:** Added a WordPress-style "View details" modal that renders README tabs, GitHub release notes, and a styled plugin banner
 - **Improved:** Refined the GitHub updater to use the canonical repository slug, complete WordPress update metadata, and Parsedown-based README rendering
-- **Improved:** Reorganized the README to follow the WordPress plugin documentation reference
 - **Fixed:** Conditional Compass badges now appear on Section fields in the form editor
 
 ### 1.2.3 - 2026-02-16
