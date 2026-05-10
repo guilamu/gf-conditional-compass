@@ -126,23 +126,23 @@ body.gfcc-hide-copy-badge .gfcc-copy-conditions-btn {
     color: #0a4b78;
 }
 
-#field_submit .gfield-admin-wrapper {
+.gfield-admin-wrapper.gfcc-has-badge-row {
     flex-wrap: wrap;
 }
 
-#field_submit .gfcc-field-badges-submit {
+.gfield-admin-wrapper > .gfcc-field-badges-row {
     display: block;
     flex: 0 0 100%;
     line-height: 1.3;
     margin: 0 0 0.75rem;
 }
 
-#field_submit .gfcc-field-badges-submit .gfcc-inline-field-id,
-#field_submit .gfcc-field-badges-submit .gfcc-cond-field-id,
-#field_submit .gfcc-field-badges-submit .gfcc-cond-to-field-id,
-#field_submit .gfcc-field-badges-submit .gfcc-copy-conditions-btn,
-#field_submit .gfcc-field-badges-submit .gfcc-cond-separator,
-#field_submit .gfcc-field-badges-submit .gfcc-cond-to-separator {
+.gfield-admin-wrapper > .gfcc-field-badges-row .gfcc-inline-field-id,
+.gfield-admin-wrapper > .gfcc-field-badges-row .gfcc-cond-field-id,
+.gfield-admin-wrapper > .gfcc-field-badges-row .gfcc-cond-to-field-id,
+.gfield-admin-wrapper > .gfcc-field-badges-row .gfcc-copy-conditions-btn,
+.gfield-admin-wrapper > .gfcc-field-badges-row .gfcc-cond-separator,
+.gfield-admin-wrapper > .gfcc-field-badges-row .gfcc-cond-to-separator {
     margin-bottom: 0;
 }
 

@@ -4,7 +4,7 @@
  * Plugin Name: Gravity Forms Conditional Compass
  * Plugin URI: https://github.com/guilamu/gf-conditional-compass
  * Description: Display field IDs and conditional logic dependencies in the Gravity Forms editor with live updates and clickable badges
- * Version: 1.3.1
+ * Version: 1.3.2
  * Author: Guilamu
  * Author URI: https://github.com/guilamu
  * Text Domain: gf-conditional-compass
@@ -21,7 +21,7 @@ if (! defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('GFFIELDIDCOND_VERSION', '1.3.1');
+define('GFFIELDIDCOND_VERSION', '1.3.2');
 define('GFFIELDIDCOND_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('GFFIELDIDCOND_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -266,12 +266,12 @@ add_filter('gform_field_content', function ($content, $field) {
 
 	// Build the initial badges HTML with a container
 	$field_id = absint($field->id);
-	$badges   = sprintf('<span class="gfcc-field-badges" data-field-id="%d">', $field_id);
+	$badges   = sprintf('<div class="gfcc-field-badges gfcc-field-badges-row" data-field-id="%d">', $field_id);
 	$badges  .= sprintf(
 		'<span class="gfcc-inline-field-id">%s</span>',
 		sprintf(esc_html__('ID: %d', 'gf-conditional-compass'), $field_id)
 	);
-	$badges  .= '</span>';
+	$badges  .= '</div>';
 
 	// Section fields render their title as an h2/h3.gsection_title instead of a label/legend.
 	if (isset($field->type) && $field->type === 'section') {

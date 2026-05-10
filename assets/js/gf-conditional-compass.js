@@ -5,7 +5,7 @@
  * Displays field IDs and conditional logic dependencies with live updates and clickable badges.
  *
  * @package Gravity_Conditional_Compass
- * @version 1.3.1
+ * @version 1.3.2
  */
 
 (function ($) {
@@ -166,15 +166,16 @@
 		if (!$wrapper.length) {
 			$wrapper = $submitField;
 		}
+		$wrapper.addClass('gfcc-has-badge-row');
 
 		var $badges = $submitField.find('.gfcc-field-badges[data-field-id="' + SUBMIT_FIELD_KEY + '"]').first();
 		if ($badges.length) {
 			$badges = $badges.detach();
 		} else {
-			$badges = $('<div class="gfcc-field-badges gfcc-field-badges-submit" data-field-id="' + SUBMIT_FIELD_KEY + '"><span class="gfcc-inline-field-id">SUBMIT</span></div>');
+			$badges = $('<div class="gfcc-field-badges gfcc-field-badges-row gfcc-field-badges-submit" data-field-id="' + SUBMIT_FIELD_KEY + '"><span class="gfcc-inline-field-id">SUBMIT</span></div>');
 		}
 
-		$badges.addClass('gfcc-field-badges-submit');
+		$badges.addClass('gfcc-field-badges-row gfcc-field-badges-submit');
 
 		var $anchor = $wrapper
 			.children()
@@ -459,6 +460,7 @@
 
 		$(selector).each(function () {
 			var $container = $(this);
+			$container.closest('.gfield-admin-wrapper').addClass('gfcc-has-badge-row');
 			var fieldId = normalizeFieldId($container.attr('data-field-id'));
 
 			if (fieldId === null) {

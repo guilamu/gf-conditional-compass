@@ -111,6 +111,9 @@ gf-conditional-compass/
 
 ## Changelog
 
+### 1.3.2 - 2026-05-10
+- **Improved:** Normal fields now use the same dedicated badge row layout as Section and Submit fields for more consistent pill alignment in the Gravity Forms editor
+
 ### 1.3.1 - 2026-05-10
 - **New:** Added submit button support to Conditional Compass badges, tracing, and copy/paste flows in the Gravity Forms editor
 
