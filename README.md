@@ -3,7 +3,7 @@
   <img src="assets/images/logo.png" alt="Gravity Forms Conditional Compass Logo" width="400">
 </p>
 
-Display field IDs, conditional logic badges, and an interactive visual trace directly in the Gravity Forms editor — so you always know which fields are pulling the strings.
+Display field IDs, conditional logic badges, and an interactive visual trace directly in the Gravity Forms editor so you always know which fields are pulling the strings.
 
 ## Inspect Conditional Logic
 
