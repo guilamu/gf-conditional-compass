@@ -5,7 +5,7 @@
  * Displays field IDs and conditional logic dependencies with live updates and clickable badges.
  *
  * @package Gravity_Conditional_Compass
- * @version 1.2.0
+ * @version 1.3.1
  */
 
 (function ($) {
@@ -64,6 +64,129 @@
 	 * @type {number}
 	 */
 	var DEBOUNCE_DELAY = 150;
+	var SUBMIT_FIELD_KEY = 'submit';
+
+	/**
+	 * Normalize a field identifier so numeric IDs stay numeric and special keys remain strings.
+	 *
+	 * @param {number|string|null|undefined} fieldId Field identifier
+	 * @return {number|string|null} Normalized field identifier
+	 */
+	function normalizeFieldId(fieldId) {
+		if (fieldId === null || typeof fieldId === 'undefined' || fieldId === '') {
+			return null;
+		}
+
+		if (typeof fieldId === 'number') {
+			return fieldId;
+		}
+
+		var normalized = String(fieldId);
+
+		return /^\d+$/.test(normalized) ? parseInt(normalized, 10) : normalized;
+	}
+
+	/**
+	 * Check if a field identifier refers to the submit button.
+	 *
+	 * @param {number|string|null} fieldId Field identifier
+	 * @return {boolean} True when this is the submit pseudo-field
+	 */
+	function isSubmitFieldId(fieldId) {
+		return String(fieldId) === SUBMIT_FIELD_KEY;
+	}
+
+	/**
+	 * Get the submit button object from the form model.
+	 *
+	 * @return {Object|null} Submit button object or null
+	 */
+	function getSubmitFieldObject() {
+		if (typeof form === 'undefined' || !form || !form.button || typeof form.button !== 'object') {
+			return null;
+		}
+
+		if (typeof form.button.id === 'undefined' || form.button.id === null || form.button.id === '') {
+			form.button.id = SUBMIT_FIELD_KEY;
+		}
+
+		if (!form.button.label && !form.button.adminLabel) {
+			form.button.label = form.button.text || form.button.value || 'Submit';
+		}
+
+		return form.button;
+	}
+
+	/**
+	 * Get all field-like objects that can participate in conditional logic.
+	 *
+	 * @return {Array<Object>} Form fields plus the submit button pseudo-field when available
+	 */
+	function getAllConditionalLogicFields() {
+		var fields = [];
+
+		if (typeof form === 'undefined' || !form) {
+			return fields;
+		}
+
+		if (Array.isArray(form.fields)) {
+			fields = form.fields.slice();
+		}
+
+		var submitField = getSubmitFieldObject();
+		if (submitField) {
+			fields.push(submitField);
+		}
+
+		return fields;
+	}
+
+	/**
+	 * Get the DOM selector for a field in the form editor canvas.
+	 *
+	 * @param {number|string|null} fieldId Field identifier
+	 * @return {string} jQuery selector for the editor field element
+	 */
+	function getFieldDomSelector(fieldId) {
+		return isSubmitFieldId(fieldId) ? '#field_submit' : '#field_' + fieldId;
+	}
+
+	/**
+	 * Ensure the submit button has a badge container in the editor DOM.
+	 *
+	 * @return {void}
+	 */
+	function ensureSubmitBadgeContainer() {
+		var $submitField = $('#field_submit');
+		if (!$submitField.length) {
+			return;
+		}
+
+		var $wrapper = $submitField.children('.gfield-admin-wrapper').first();
+		if (!$wrapper.length) {
+			$wrapper = $submitField;
+		}
+
+		var $badges = $submitField.find('.gfcc-field-badges[data-field-id="' + SUBMIT_FIELD_KEY + '"]').first();
+		if ($badges.length) {
+			$badges = $badges.detach();
+		} else {
+			$badges = $('<div class="gfcc-field-badges gfcc-field-badges-submit" data-field-id="' + SUBMIT_FIELD_KEY + '"><span class="gfcc-inline-field-id">SUBMIT</span></div>');
+		}
+
+		$badges.addClass('gfcc-field-badges-submit');
+
+		var $anchor = $wrapper
+			.children()
+			.not('.gfield-admin-icons, .gfield-compact-icons, .gfcc-field-badges-submit')
+			.first();
+
+		if ($anchor.length) {
+			$badges.insertBefore($anchor);
+		} else {
+			$wrapper.prepend($badges);
+		}
+	}
 
 	/**
 	 * Safely get field by ID
@@ -72,6 +195,16 @@
 	 * @return {Object|null} Field object or null
 	 */
 	function safelyGetFieldById(fieldId) {
+		fieldId = normalizeFieldId(fieldId);
+
+		if (fieldId === null) {
+			return null;
+		}
+
+		if (isSubmitFieldId(fieldId)) {
+			return getSubmitFieldObject();
+		}
+
 		if (typeof GetFieldById === 'function') {
 			return GetFieldById(fieldId);
 		}
@@ -85,6 +218,15 @@
 	 * @return {string} Display label for the field
 	 */
 	function getFieldDisplayLabel(fieldId) {
+		fieldId = normalizeFieldId(fieldId);
+
+		if (isSubmitFieldId(fieldId)) {
+			var submitField = getSubmitFieldObject();
+			return submitField
+				? (submitField.adminLabel || submitField.label || submitField.text || submitField.value || 'Submit')
+				: 'Submit';
+		}
+
 		// Check for special field labels first
 		if (typeof fieldId === 'string' && specialFieldLabels[fieldId]) {
 			return specialFieldLabels[fieldId];
@@ -111,16 +253,18 @@
 	 * @return {void}
 	 */
 	function openConditionalLogicSettings(fieldId) {
-		if (!fieldId || isNaN(fieldId)) {
+		fieldId = normalizeFieldId(fieldId);
+
+		if (fieldId === null) {
 			return;
 		}
 
 		var field = safelyGetFieldById(fieldId);
-		if (!field) {
+		if (!field && !isSubmitFieldId(fieldId)) {
 			return;
 		}
 
-		var $field = $('#field_' + fieldId);
+		var $field = $(getFieldDomSelector(fieldId));
 		if (!$field.length) {
 			return;
 		}
@@ -162,8 +306,9 @@
 	 * @return {void}
 	 */
 	function updateConditionToBadges() {
-		// Ensure form object exists
-		if (typeof form === 'undefined' || !form || !form.fields) {
+		var allFields = getAllConditionalLogicFields();
+
+		if (!allFields.length) {
 			return;
 		}
 
@@ -173,7 +318,7 @@
 		// Build usage map: which fields use which other fields
 		var fieldUsageMap = {};
 
-		form.fields.forEach(function (field) {
+		allFields.forEach(function (field) {
 			if (!field || !field.conditionalLogic || !field.conditionalLogic.rules) {
 				return;
 			}
@@ -239,7 +384,7 @@
 					: 'Field ' + usingFieldId;
 
 				var tooltip = gfFieldIdCondTranslations.usedAsConditionIn + ': ' + fieldLabel;
-				var badgeText = 'COND: ' + usingFieldId;
+				var badgeText = isSubmitFieldId(usingFieldId) ? 'COND: SUBMIT' : 'COND: ' + usingFieldId;
 
 				var badge = $('<span></span>')
 					.addClass('gfcc-cond-to-field-id')
@@ -286,8 +431,8 @@
 			e.preventDefault();
 			e.stopPropagation();
 
-			var targetFieldId = parseInt($(this).attr('data-target-field-id'), 10);
-			if (!isNaN(targetFieldId)) {
+			var targetFieldId = normalizeFieldId($(this).attr('data-target-field-id'));
+			if (targetFieldId !== null) {
 				openConditionalLogicSettings(targetFieldId);
 			}
 		});
@@ -302,20 +447,21 @@
 	 * @return {void}
 	 */
 	function updateConditionalBadges(specificFieldId) {
-		// Ensure form object exists
-		if (typeof form === 'undefined' || !form || !form.fields) {
+		if (typeof form === 'undefined' || !form) {
 			return;
 		}
 
-		var selector = specificFieldId
+		ensureSubmitBadgeContainer();
+
+		var selector = (typeof specificFieldId !== 'undefined' && specificFieldId !== null)
 			? '.gfcc-field-badges[data-field-id="' + specificFieldId + '"]'
 			: '.gfcc-field-badges';
 
 		$(selector).each(function () {
 			var $container = $(this);
-			var fieldId = parseInt($container.data('field-id'), 10);
+			var fieldId = normalizeFieldId($container.attr('data-field-id'));
 
-			if (isNaN(fieldId)) {
+			if (fieldId === null) {
 				return;
 			}
 
@@ -341,7 +487,7 @@
 				var logicType = field.conditionalLogic.logicType || 'all';
 				var actionType = field.conditionalLogic.actionType || 'show';
 
-				var currentFieldLabel = field.adminLabel || field.label || gfFieldIdCondTranslations.thisField;
+				var currentFieldLabel = getFieldDisplayLabel(fieldId) || gfFieldIdCondTranslations.thisField;
 				var actionText = actionType === 'hide'
 					? gfFieldIdCondTranslations.willBeHiddenIf
 					: gfFieldIdCondTranslations.willBeDisplayedIf;
@@ -501,8 +647,8 @@
 			e.preventDefault();
 			e.stopPropagation();
 
-			var fieldId = parseInt($(this).attr('data-field-id'), 10);
-			if (!isNaN(fieldId)) {
+			var fieldId = normalizeFieldId($(this).attr('data-field-id'));
+			if (fieldId !== null) {
 				openConditionalLogicSettings(fieldId);
 			}
 		});
@@ -797,12 +943,13 @@
 	 * Open the Paste modal with field list
 	 */
 	function openPasteModal() {
-		console.log('[GFCC DEBUG] openPasteModal() called', { copiedConditions: copiedConditions, form: !!window.form, fields: !!(window.form && window.form.fields) });
-		if (!copiedConditions || !window.form || !window.form.fields) {
+		var allFields = getAllConditionalLogicFields();
+		console.log('[GFCC DEBUG] openPasteModal() called', { copiedConditions: copiedConditions, form: !!window.form, fields: allFields.length });
+		if (!copiedConditions || !window.form || !allFields.length) {
 			console.log('[GFCC DEBUG] openPasteModal() — early return (missing data)');
 			return;
 		}
-		console.log('[GFCC DEBUG] openPasteModal() — building modal, field count:', window.form.fields.length);
+		console.log('[GFCC DEBUG] openPasteModal() — building modal, field count:', allFields.length);
 
 		// Remove any existing modal
 		$('#gfcc-modal-overlay').remove();
@@ -810,10 +957,11 @@
 
 		var selectedIds = {};
 		lastClickedIndex = -1;
+		var sourceFieldToken = isSubmitFieldId(sourceFieldId) ? 'SUBMIT' : sourceFieldId;
 
 		// Build field list HTML
 		var listHtml = '';
-		window.form.fields.forEach(function (field, index) {
+		allFields.forEach(function (field, index) {
 			if (!field || !field.id) return;
 
 			// Skip the source field entirely
@@ -841,7 +989,7 @@
 			'<div id="gfcc-modal-overlay"></div>' +
 			'<div id="gfcc-modal">' +
 			'<div class="gfcc-modal-header">' +
-			'<h3>' + gfFieldIdCondTranslations.selectFieldsToPaste.replace('%d', sourceFieldId) + '</h3>' +
+			'<h3>' + gfFieldIdCondTranslations.selectFieldsToPaste.replace('%d', sourceFieldToken) + '</h3>' +
 			'<button class="gfcc-modal-close" type="button">&times;</button>' +
 			'</div>' +
 			'<div class="gfcc-modal-toolbar">' +
@@ -896,8 +1044,13 @@
 		// Click / Shift+Click selection
 		$('#gfcc-modal').on('click', '.gfcc-modal-field-item:not(.source-field)', function (e) {
 			var $item = $(this);
-			var fieldId = parseInt($item.attr('data-field-id'), 10);
+			var fieldId = normalizeFieldId($item.attr('data-field-id'));
 			var index = parseInt($item.attr('data-index'), 10);
+			var fieldKey = String(fieldId);
+
+			if (fieldId === null || isNaN(index)) {
+				return;
+			}
 
 			if (e.shiftKey && lastClickedIndex >= 0) {
 				// Range select
@@ -907,18 +1060,21 @@
 				$('#gfcc-modal .gfcc-modal-field-item:not(.source-field)').each(function () {
 					var idx = parseInt($(this).attr('data-index'), 10);
 					if (idx >= start && idx <= end) {
-						var fId = parseInt($(this).attr('data-field-id'), 10);
-						selectedIds[fId] = true;
+						var fId = normalizeFieldId($(this).attr('data-field-id'));
+						if (fId === null) {
+							return;
+						}
+						selectedIds[String(fId)] = fId;
 						$(this).addClass('selected').find('input[type="checkbox"]').prop('checked', true);
 					}
 				});
 			} else {
 				// Toggle single
-				if (selectedIds[fieldId]) {
-					delete selectedIds[fieldId];
+				if (selectedIds[fieldKey]) {
+					delete selectedIds[fieldKey];
 					$item.removeClass('selected').find('input[type="checkbox"]').prop('checked', false);
 				} else {
-					selectedIds[fieldId] = true;
+					selectedIds[fieldKey] = fieldId;
 					$item.addClass('selected').find('input[type="checkbox"]').prop('checked', true);
 				}
 			}
@@ -958,7 +1114,9 @@
 
 		// Paste action
 		$(document).on('click.gfccModal', '#gfcc-paste-btn', function () {
-			var ids = Object.keys(selectedIds).map(Number);
+			var ids = Object.keys(selectedIds).map(function (key) {
+				return selectedIds[key];
+			});
 			if (ids.length === 0) return;
 
 			ids.forEach(function (targetId) {
@@ -1000,9 +1158,9 @@
 		e.stopPropagation();
 		e.stopImmediatePropagation();
 
-		var fieldId = parseInt(btn.getAttribute('data-field-id'), 10);
+		var fieldId = normalizeFieldId(btn.getAttribute('data-field-id'));
 		console.log('[GFCC DEBUG] Field ID:', fieldId);
-		if (isNaN(fieldId)) { console.log('[GFCC DEBUG] fieldId is NaN, aborting'); return; }
+		if (fieldId === null) { console.log('[GFCC DEBUG] fieldId is invalid, aborting'); return; }
 
 		var field = safelyGetFieldById(fieldId);
 		console.log('[GFCC DEBUG] Field object:', field);
@@ -1031,6 +1189,10 @@
  * @param {number} sourceFieldId The ID of the field that was clicked
  */
 	function startVisualTrace(sourceFieldId) {
+		sourceFieldId = normalizeFieldId(sourceFieldId);
+		if (sourceFieldId === null) {
+			return;
+		}
 
 
 		// Check Driver.js availability
@@ -1042,7 +1204,7 @@
 
 		// Ensure form object exists
 		var formData = window.form;
-		if (typeof formData === 'undefined' || !formData || !formData.fields) {
+		if (typeof formData === 'undefined' || !formData) {
 			console.error('Visual Trace: Form data not found', formData);
 			return;
 		}
@@ -1058,7 +1220,7 @@
 		// Find all fields that depend on this source field
 		var dependentFields = [];
 
-		formData.fields.forEach(function (field) {
+		getAllConditionalLogicFields().forEach(function (field) {
 			if (!field || !field.conditionalLogic || !field.conditionalLogic.rules) {
 				return;
 			}
@@ -1176,7 +1338,7 @@
 			var prevLabel = prevItem ? '← ' + getFieldDisplayLabel(prevItem.field.id) : '← Previous';
 
 			return {
-				element: '#field_' + field.id,
+				element: getFieldDomSelector(field.id),
 				popover: {
 					title: getFieldDisplayLabel(field.id),
 					description: description,
@@ -1339,13 +1501,18 @@
 	 * @return {boolean} True if at least one other field references this field in its rules
 	 */
 	function isFieldUsedInConditionalLogic(fieldId) {
-		var formData = window.form;
-		if (!formData || !formData.fields) {
+		fieldId = normalizeFieldId(fieldId);
+		if (fieldId === null) {
 			return false;
 		}
 
-		for (var i = 0; i < formData.fields.length; i++) {
-			var field = formData.fields[i];
+		var allFields = getAllConditionalLogicFields();
+		if (!allFields.length) {
+			return false;
+		}
+
+		for (var i = 0; i < allFields.length; i++) {
+			var field = allFields[i];
 			if (!field || !field.conditionalLogic || !field.conditionalLogic.rules) {
 				continue;
 			}
@@ -1369,10 +1536,10 @@
 		}
 
 		var $container = $(this).closest('.gfcc-field-badges');
-		var fieldId = parseInt($container.data('field-id'), 10);
+		var fieldId = normalizeFieldId($container.attr('data-field-id'));
 
 		// Only trigger Visual Trace if this field is actually used by another field
-		if (isNaN(fieldId) || !isFieldUsedInConditionalLogic(fieldId)) {
+		if (fieldId === null || !isFieldUsedInConditionalLogic(fieldId)) {
 			return;
 		}
 
@@ -1406,10 +1573,10 @@
 			return;
 		}
 
-		var fieldId = parseInt(container.getAttribute('data-field-id'), 10);
+		var fieldId = normalizeFieldId(container.getAttribute('data-field-id'));
 
 		// Only trigger Visual Trace if this field is actually used by another field
-		if (isNaN(fieldId) || !isFieldUsedInConditionalLogic(fieldId)) {
+		if (fieldId === null || !isFieldUsedInConditionalLogic(fieldId)) {
 			return;
 		}
 
@@ -1425,8 +1592,8 @@
 		e.preventDefault();
 		e.stopPropagation();
 
-		var targetId = parseInt($(this).attr('data-target-field-id'), 10);
-		if (!isNaN(targetId) && typeof startVisualTrace === 'function') {
+		var targetId = normalizeFieldId($(this).attr('data-target-field-id'));
+		if (targetId !== null && typeof startVisualTrace === 'function') {
 			startVisualTrace(targetId);
 		}
 	});

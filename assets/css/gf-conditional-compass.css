@@ -126,6 +126,26 @@ body.gfcc-hide-copy-badge .gfcc-copy-conditions-btn {
     color: #0a4b78;
 }
 
+#field_submit .gfield-admin-wrapper {
+    flex-wrap: wrap;
+}
+
+#field_submit .gfcc-field-badges-submit {
+    display: block;
+    flex: 0 0 100%;
+    line-height: 1.3;
+    margin: 0 0 0.75rem;
+}
+
+#field_submit .gfcc-field-badges-submit .gfcc-inline-field-id,
+#field_submit .gfcc-field-badges-submit .gfcc-cond-field-id,
+#field_submit .gfcc-field-badges-submit .gfcc-cond-to-field-id,
+#field_submit .gfcc-field-badges-submit .gfcc-copy-conditions-btn,
+#field_submit .gfcc-field-badges-submit .gfcc-cond-separator,
+#field_submit .gfcc-field-badges-submit .gfcc-cond-to-separator {
+    margin-bottom: 0;
+}
+
 /* Existing badge and tooltip styles (unchanged) */
 .gfcc-cond-separator {
     display: inline-flex;

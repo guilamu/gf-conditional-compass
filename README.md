@@ -3,7 +3,7 @@
   <img src="assets/images/logo.png" alt="Gravity Forms Conditional Compass Logo" width="400">
 </p>
 
-Display field IDs, conditional logic badges, and an interactive visual trace directly in the Gravity Forms editor so you always know which fields are pulling the strings.
+Display field IDs, conditional logic badges, and an interactive visual trace directly in the Gravity Forms editor — so you always know which fields are pulling the strings.
 
 ## Inspect Conditional Logic
 
@@ -110,6 +110,9 @@ gf-conditional-compass/
 ```
 
 ## Changelog
+
+### 1.3.1 - 2026-05-10
+- **New:** Added submit button support to Conditional Compass badges, tracing, and copy/paste flows in the Gravity Forms editor
 
 ### 1.3.0 - 2026-05-10
 - **New:** Added a WordPress-style "View details" modal that renders README tabs, GitHub release notes, and a styled plugin banner
