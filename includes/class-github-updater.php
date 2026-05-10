@@ -501,7 +501,11 @@ class GFCC_GitHub_Updater
             return '';
         }
 
+        // Strip images before parsing so the plugin details modal never shows
+        // escaped README logo markup as raw text.
         $markdown = preg_replace('/!\[[^\]]*\]\([^\)]+\)/', '', $markdown);
+        $markdown = preg_replace('/<p\b[^>]*>\s*(?:(?:<a\b[^>]*>\s*)?<img\b[^>]*>\s*(?:<\/a>\s*)?)+<\/p>\s*/is', '', $markdown);
+        $markdown = preg_replace('/(?:<a\b[^>]*>\s*)?<img\b[^>]*>\s*(?:<\/a>)?/i', '', $markdown);
 
         if (!class_exists('Parsedown')) {
             $parsedown_path = __DIR__ . '/Parsedown.php';
