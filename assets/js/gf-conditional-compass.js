@@ -5,7 +5,7 @@
  * Displays field IDs and conditional logic dependencies with live updates and clickable badges.
  *
  * @package Gravity_Conditional_Compass
- * @version 1.3.2
+ * @version 1.3.3
  */
 
 (function ($) {

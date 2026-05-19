@@ -213,6 +213,30 @@ class GFCC_GitHub_Updater
     }
 
     /**
+     * Get a package URL suitable for the plugin details footer action button.
+     *
+     * @param array|null $release_data Release data from GitHub API.
+     * @return string
+     */
+    private static function get_plugin_info_download_link(?array $release_data = null): string
+    {
+        if (is_array($release_data)) {
+            $package_url = self::get_package_url($release_data);
+
+            if ('' !== $package_url) {
+                return $package_url;
+            }
+        }
+
+        return sprintf(
+            'https://github.com/%s/%s/releases/latest/download/%s.zip',
+            self::GITHUB_USER,
+            self::GITHUB_REPO,
+            self::GITHUB_REPO
+        );
+    }
+
+    /**
      * Check for plugin updates from GitHub.
      *
      * @param array|false $update      The plugin update data.
@@ -248,7 +272,7 @@ class GFCC_GitHub_Updater
             'version' => $new_version,
             'package' => self::get_package_url($release_data),
             'url' => $release_data['html_url'] ?? '',
-            'tested' => get_bloginfo('version'),
+            'tested' => self::TESTED_WP,
             'requires_php' => self::REQUIRES_PHP,
             'compatibility' => new stdClass(),
             'icons' => array(),
@@ -302,8 +326,13 @@ class GFCC_GitHub_Updater
         $res->tested = get_bloginfo('version');
         $res->requires_php = self::REQUIRES_PHP;
 
-        if ($release_data && '' !== $release_version && version_compare($release_version, $installed_version, '>')) {
-            $res->download_link = self::get_package_url($release_data);
+        $download_link = self::get_plugin_info_download_link($release_data);
+
+        if ('' !== $download_link) {
+            $res->download_link = $download_link;
+        }
+
+        if ($release_data && !empty($release_data['published_at'])) {
             $res->last_updated = $release_data['published_at'] ?? '';
         }
 

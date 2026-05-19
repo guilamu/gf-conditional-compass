@@ -152,7 +152,7 @@ body.gfcc-hide-copy-badge .gfcc-copy-conditions-btn {
     align-items: center;
     justify-content: center;
     line-height: 1;
-    margin: 0 0.15rem 0.5rem 0.15rem;
+    margin-right: 0.25rem;
     cursor: pointer;
     padding: 0;
     transition: transform 0.3s ease;
