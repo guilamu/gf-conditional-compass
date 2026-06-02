@@ -111,6 +111,9 @@ gf-conditional-compass/
 
 ## Changelog
 
+### 1.3.4 - 2026-06-02
+- **Fixed:** Resolved a fatal error (`Call to undefined method Parsedown::setSafeMode()`) when another plugin loads an older Parsedown version that lacks the `setSafeMode` method
+
 ### 1.3.3 - 2026-05-19
 - **Improved:** Updated the GitHub auto-updater so the "View details" modal keeps its footer action button on already-current installs and reports tested WordPress compatibility through the expected update metadata
 - **Fixed:** Refined conditional separator badge spacing for tighter alignment in the Gravity Forms editor

@@ -549,7 +549,12 @@ class GFCC_GitHub_Updater
         }
 
         $parsedown = new Parsedown();
-        $parsedown->setSafeMode(true);
+
+        if (method_exists($parsedown, 'setSafeMode')) {
+            $parsedown->setSafeMode(true);
+        } elseif (method_exists($parsedown, 'setMarkupEscaped')) {
+            $parsedown->setMarkupEscaped(true);
+        }
 
         $html = $parsedown->text($markdown);
 
